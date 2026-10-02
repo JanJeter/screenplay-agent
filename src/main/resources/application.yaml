@@ -5,10 +5,10 @@
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mariadb://localhost:3307/saas_backend}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:55432/saas_backend}
     username: ${SPRING_DATASOURCE_USERNAME:saas_user}
     password: ${SPRING_DATASOURCE_PASSWORD:adminpassword}
-    driver-class-name: org.mariadb.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:

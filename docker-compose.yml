@@ -1,19 +1,18 @@
 services:
   db:
-    image: mariadb:11.3
-    container_name: saas-db
+    image: postgres:16-alpine
+    container_name: screenplay-postgres
     restart: always
     environment:
-      MARIADB_DATABASE: saas_backend
-      MARIADB_USER: saas_user
-      MARIADB_PASSWORD: adminpassword
-      MARIADB_ROOT_PASSWORD: rootpass
+      POSTGRES_DB: saas_backend
+      POSTGRES_USER: saas_user
+      POSTGRES_PASSWORD: adminpassword
     ports:
-      - "3307:3306"
+      - "55432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U saas_user -d saas_backend"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,7 +27,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/saas_backend
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/saas_backend
       SPRING_DATASOURCE_USERNAME: saas_user
       SPRING_DATASOURCE_PASSWORD: adminpassword
 

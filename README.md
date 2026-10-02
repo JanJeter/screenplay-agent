@@ -39,13 +39,13 @@ It showcases how to structure, document, and secure a Java backend using enterpr
 - **Java 21+**
 - **Spring Boot 3.5+**
 - **Spring Security, Spring Data JPA**
-- **MariaDB/MySQL**
+- **PostgreSQL**
 - **Swagger / OpenAPI 3**
 - **Lombok**
 - **Maven** (build tool)
 - **Docker** (containerization support)
 
-> The project is easily adaptable to PostgreSQL and Gradle on request.
+> This fork is configured to use PostgreSQL for local development.
 
 ---
 
@@ -115,7 +115,7 @@ You can clone the repository, build the app, and launch all services using Docke
 
 - The backend API will be available at [http://localhost:8080](http://localhost:8080).
 - **Swagger UI:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
-- MariaDB runs on port **3307** (container: 3306).
+- PostgreSQL runs on port **5432**.
 - Default admin user and demo data are loaded automatically on first run.
 - Uploaded files are saved to the `uploads/` directory (excluded from git).
 - All demo credentials and secrets are for **local/testing only**.
