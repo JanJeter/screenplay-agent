@@ -66,7 +66,10 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/actuator/health",
                     "/actuator/health/**",
-                    "/actuator/info"
+                    "/actuator/info",
+                    // AgentInternalController validates its own, audience-bound
+                    // execution credential rather than accepting a user JWT.
+                    "/internal/agent/**"
                 ).permitAll()
                 // ADMIN-ONLY ENDPOINTS
                 .requestMatchers("/api/v1/roles/**").hasRole("ADMIN")

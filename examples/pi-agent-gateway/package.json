@@ -1,0 +1,11 @@
+{
+  "name": "screenplay-agent-gateway-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json src/server.ts",
+    "check": "node ../../pi-agent/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
+    "smoke": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/smoke.ts"
+  },
+  "engines": { "node": ">=22.19.0" }
+}

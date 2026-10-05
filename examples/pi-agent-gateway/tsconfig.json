@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "typeRoots": ["../../pi-agent/node_modules/@types"],
+    "paths": {
+      "@earendil-works/pi-agent-core": ["../../pi-agent/packages/agent/src/index.ts"],
+      "@earendil-works/pi-ai": ["../../pi-agent/packages/ai/src/index.ts"],
+      "@earendil-works/pi-ai/*": ["../../pi-agent/packages/ai/src/*.ts"],
+      "typebox": ["../../pi-agent/node_modules/typebox"]
+    }
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts"]
+}

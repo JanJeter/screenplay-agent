@@ -27,6 +27,17 @@ jwt:
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
   refresh-token-duration-ms: ${JWT_REFRESH_TOKEN_DURATION_MS:604800000}
 
+# Credentials used only by the Agent Gateway when it calls the internal
+# screenplay adapters.  This is deliberately separate from browser JWTs.
+agent:
+  execution:
+    # Set AGENT_EXECUTION_SECRET in every non-demo deployment; do not reuse JWT_SECRET.
+    secret: ${AGENT_EXECUTION_SECRET:agent-execution-demo-secret-must-be-replaced-in-production-123456789}
+    ttl-seconds: ${AGENT_EXECUTION_TOKEN_TTL_SECONDS:600}
+  gateway:
+    url: ${AGENT_GATEWAY_URL:http://127.0.0.1:3001}
+    token: ${AGENT_GATEWAY_TOKEN:}
+
 management:
   endpoints:
     web:

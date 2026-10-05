@@ -43,6 +43,10 @@ public class ScriptVersion {
     @Column(name = "raw_text", nullable = false, columnDefinition = "text")
     private String rawText;
 
+    /** Changes only when this immutable version's body is changed. */
+    @Column(name = "content_revision", nullable = false)
+    private long contentRevision = 1L;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ScriptStatus status = ScriptStatus.UPLOADED;

@@ -25,6 +25,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        // Internal Agent callbacks carry a different JWT issuer/audience and are
+        // authenticated by AgentExecutionTokenService in the controller.
+        return request.getRequestURI().startsWith("/internal/agent/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 

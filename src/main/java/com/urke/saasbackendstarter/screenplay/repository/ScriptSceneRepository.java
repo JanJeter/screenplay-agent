@@ -7,9 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ScriptSceneRepository extends JpaRepository<ScriptScene, Long> {
     List<ScriptScene> findAllByScriptVersionIdOrderBySortOrderAsc(Long scriptId);
+    Optional<ScriptScene> findByIdAndScriptVersionId(Long id, Long scriptId);
 
     @Modifying(flushAutomatically = true)
     @Query("delete from ScriptScene scene where scene.scriptVersion.id = :scriptId")
