@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/storyboard-list-response.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["items", "page", "size", "total"],
+  "properties": {
+    "items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "projectId", "scriptId", "scriptRevision", "sceneNo", "heading", "revision", "shotCount", "createdAt", "updatedAt"], "properties": {"id": {"$ref": "shared.schema.json#/$defs/id"}, "projectId": {"$ref": "shared.schema.json#/$defs/id"}, "scriptId": {"$ref": "shared.schema.json#/$defs/id"}, "scriptRevision": {"type": "integer", "minimum": 1}, "sceneNo": {"type": "integer", "minimum": 1}, "heading": {"type": "string", "minLength": 1, "maxLength": 255}, "revision": {"type": "integer", "minimum": 1}, "shotCount": {"type": "integer", "minimum": 4, "maximum": 8}, "createdAt": {"type": "string", "format": "date-time"}, "updatedAt": {"type": "string", "format": "date-time"}}}},
+    "page": {"type": "integer", "minimum": 0}, "size": {"type": "integer", "minimum": 1, "maximum": 100}, "total": {"type": "integer", "minimum": 0}
+  }
+}

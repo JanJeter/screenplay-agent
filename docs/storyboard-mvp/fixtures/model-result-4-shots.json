@@ -1,0 +1,9 @@
+{
+  "mode":"generate",
+  "shots":[
+    {"shotSize":"WIDE","cameraMovement":"STATIC","visualDescription":"夜雨中的客厅，许晴停在门边，林舟站在抽屉旁。","dialogue":"许晴：你说有东西要给我。","sound":"雨敲着窗。","durationSeconds":5,"imagePrompt":"夜雨旧公寓客厅，许晴在门边，林舟在抽屉旁，冷色电影广角","videoPrompt":"5秒静态广角，许晴在门边说话，林舟站在抽屉旁","sourceQuote":"雨敲着窗。许晴站在门边，没有进来。"},
+    {"shotSize":"MEDIUM","cameraMovement":"DOLLY_IN","visualDescription":"林舟取出未拆信后把它藏到身后，停顿。","dialogue":"","sound":"雨声。","durationSeconds":5,"imagePrompt":"林舟取出未拆牛皮纸信后藏在身后，电影中景推近","videoPrompt":"5秒中景推近，林舟把未拆信藏到身后并停顿","sourceQuote":"林舟把信藏到身后，停了两秒"},
+    {"shotSize":"CLOSE_UP","cameraMovement":"STATIC","visualDescription":"林舟将未拆信放在茶几上，手离开信封。","dialogue":"林舟：不是现在。","sound":"雨声。","durationSeconds":5,"imagePrompt":"茶几上未拆牛皮纸信特写，林舟手放下信后离开","videoPrompt":"5秒静态特写，林舟放下未拆信，封口完整","sourceQuote":"又把它放到茶几上。\n\n林舟：不是现在。"},
+    {"shotSize":"MEDIUM","cameraMovement":"STATIC","visualDescription":"许晴拿起未拆信看向林舟，二人沉默。","dialogue":"许晴：那我先替你保管。","sound":"雨声更响了。","durationSeconds":5,"imagePrompt":"许晴手持未拆牛皮纸信看向林舟，雨夜电影中景","videoPrompt":"5秒静态中景，许晴拿起未拆信看向林舟，全程不拆开","sourceQuote":"许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。"}
+  ]
+}

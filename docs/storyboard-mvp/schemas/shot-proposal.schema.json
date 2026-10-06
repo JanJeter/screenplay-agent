@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/shot-proposal.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["id", "storyboardId", "targetShotId", "sourceRunId", "baseStoryboardRevision", "status", "candidateShot", "createdAt"],
+  "properties": {
+    "id": {"$ref": "shared.schema.json#/$defs/id"}, "storyboardId": {"$ref": "shared.schema.json#/$defs/id"}, "targetShotId": {"$ref": "shared.schema.json#/$defs/id"}, "sourceRunId": {"$ref": "shared.schema.json#/$defs/id"}, "baseStoryboardRevision": {"type": "integer", "minimum": 1}, "status": {"enum": ["PENDING", "ACCEPTED", "REJECTED"]}, "candidateShot": {"$ref": "shared.schema.json#/$defs/editableShot"}, "createdAt": {"type": "string", "format": "date-time"}, "resolvedAt": {"type": ["string", "null"], "format": "date-time"}
+  }
+}

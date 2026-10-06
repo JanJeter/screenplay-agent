@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://screenplay.local/schemas/storyboard/shared.schema.json",
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+    "clientRequestId": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": ".*\\S.*"},
+    "shotSize": {"type": "string", "enum": ["ESTABLISHING", "WIDE", "MEDIUM", "CLOSE_UP", "EXTREME_CLOSE_UP"]},
+    "cameraMovement": {"type": "string", "enum": ["STATIC", "PAN", "TILT", "DOLLY_IN", "DOLLY_OUT", "TRACK", "HANDHELD"]},
+    "editableShot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["shotSize", "cameraMovement", "visualDescription", "dialogue", "sound", "durationSeconds", "imagePrompt", "videoPrompt", "sourceQuote"],
+      "properties": {
+        "shotSize": {"$ref": "#/$defs/shotSize"}, "cameraMovement": {"$ref": "#/$defs/cameraMovement"},
+        "visualDescription": {"type": "string", "minLength": 1, "maxLength": 2000, "pattern": ".*\\S.*"},
+        "dialogue": {"type": "string", "maxLength": 1200}, "sound": {"type": "string", "maxLength": 1200},
+        "durationSeconds": {"type": "integer", "minimum": 1, "maximum": 30},
+        "imagePrompt": {"type": "string", "minLength": 1, "maxLength": 2000, "pattern": ".*\\S.*"},
+        "videoPrompt": {"type": "string", "minLength": 1, "maxLength": 2500, "pattern": ".*\\S.*"},
+        "sourceQuote": {"type": "string", "minLength": 1, "maxLength": 500, "pattern": ".*\\S.*"}
+      }
+    },
+    "sourceSnapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scriptId", "scriptRevision", "sourceSceneId", "sceneNo", "heading", "sceneText", "sceneHash"],
+      "properties": {
+        "scriptId": {"$ref": "#/$defs/id"}, "scriptRevision": {"type": "integer", "minimum": 1},
+        "sourceSceneId": {"$ref": "#/$defs/id"}, "sceneNo": {"type": "integer", "minimum": 1},
+        "heading": {"type": "string", "minLength": 1, "maxLength": 255}, "sceneText": {"type": "string", "minLength": 1, "maxLength": 8000},
+        "sceneHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "error": {
+      "type": "object", "additionalProperties": false, "required": ["code", "message", "traceId"],
+      "properties": {"code": {"type": "string", "minLength": 1, "maxLength": 80}, "message": {"type": "string", "minLength": 1, "maxLength": 500}, "traceId": {"$ref": "#/$defs/id"}, "currentRevision": {"type": "integer", "minimum": 1}}
+    }
+  }
+}

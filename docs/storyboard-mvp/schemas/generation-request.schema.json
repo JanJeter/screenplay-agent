@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/generation-request.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["scriptId", "sceneId", "targetShotCount", "instructions", "clientRequestId"],
+  "properties": {
+    "scriptId": {"$ref": "shared.schema.json#/$defs/id"}, "sceneId": {"$ref": "shared.schema.json#/$defs/id"},
+    "targetShotCount": {"type": "integer", "minimum": 4, "maximum": 8},
+    "instructions": {"type": "string", "maxLength": 1000}, "clientRequestId": {"$ref": "shared.schema.json#/$defs/clientRequestId"}
+  }
+}

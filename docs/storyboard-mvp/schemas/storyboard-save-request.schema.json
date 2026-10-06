@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/storyboard-save-request.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["expectedRevision", "shots"],
+  "properties": {
+    "expectedRevision": {"type": "integer", "minimum": 1},
+    "shots": {"type": "array", "minItems": 4, "maxItems": 8, "items": {"type": "object", "additionalProperties": false, "required": ["id", "shotSize", "cameraMovement", "visualDescription", "dialogue", "sound", "durationSeconds", "imagePrompt", "videoPrompt", "sourceQuote"], "properties": {"id": {"$ref": "shared.schema.json#/$defs/id"}, "shotSize": {"$ref": "shared.schema.json#/$defs/shotSize"}, "cameraMovement": {"$ref": "shared.schema.json#/$defs/cameraMovement"}, "visualDescription": {"type": "string", "minLength": 1, "maxLength": 2000}, "dialogue": {"type": "string", "maxLength": 1200}, "sound": {"type": "string", "maxLength": 1200}, "durationSeconds": {"type": "integer", "minimum": 1, "maximum": 30}, "imagePrompt": {"type": "string", "minLength": 1, "maxLength": 2000}, "videoPrompt": {"type": "string", "minLength": 1, "maxLength": 2500}, "sourceQuote": {"type": "string", "minLength": 1, "maxLength": 500}}}}
+  }
+}

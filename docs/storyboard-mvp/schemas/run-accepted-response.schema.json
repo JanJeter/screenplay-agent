@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/run-accepted-response.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["runId", "status"],
+  "properties": {"runId": {"$ref": "shared.schema.json#/$defs/id"}, "status": {"const": "QUEUED"}}
+}

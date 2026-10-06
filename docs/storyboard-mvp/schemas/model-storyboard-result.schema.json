@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/model-storyboard-result.schema.json",
+  "oneOf": [
+    {"type": "object", "additionalProperties": false, "required": ["mode", "shots"], "properties": {"mode": {"const": "generate"}, "shots": {"type": "array", "minItems": 4, "maxItems": 8, "items": {"$ref": "shared.schema.json#/$defs/editableShot"}}}},
+    {"type": "object", "additionalProperties": false, "required": ["mode", "proposalShot"], "properties": {"mode": {"const": "rewrite"}, "proposalShot": {"$ref": "shared.schema.json#/$defs/editableShot"}}}
+  ]
+}

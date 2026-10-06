@@ -1,0 +1,4 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/internal-storyboard-result-response.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["artifactId", "resultRef"], "properties": {"artifactId": {"$ref": "shared.schema.json#/$defs/id"}, "resultRef": {"type": "object", "additionalProperties": false, "required": ["type", "id", "storyboardId"], "properties": {"type": {"enum": ["storyboard", "shot_proposal"]}, "id": {"$ref": "shared.schema.json#/$defs/id"}, "storyboardId": {"$ref": "shared.schema.json#/$defs/id"}}}}
+}

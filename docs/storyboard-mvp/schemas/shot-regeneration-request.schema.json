@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/shot-regeneration-request.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["instruction", "expectedRevision", "clientRequestId"],
+  "properties": {"instruction": {"type": "string", "minLength": 1, "maxLength": 1000, "pattern": ".*\\S.*"}, "expectedRevision": {"type": "integer", "minimum": 1}, "clientRequestId": {"$ref": "shared.schema.json#/$defs/clientRequestId"}}
+}

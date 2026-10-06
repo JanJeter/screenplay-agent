@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/storyboard-detail.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["id", "projectId", "createdBy", "sourceRunId", "sourceSnapshot", "revision", "createdAt", "updatedAt", "shots", "proposalSummaries"],
+  "properties": {
+    "id": {"$ref": "shared.schema.json#/$defs/id"}, "projectId": {"$ref": "shared.schema.json#/$defs/id"}, "createdBy": {"$ref": "shared.schema.json#/$defs/id"}, "sourceRunId": {"$ref": "shared.schema.json#/$defs/id"},
+    "sourceSnapshot": {"$ref": "shared.schema.json#/$defs/sourceSnapshot"}, "revision": {"type": "integer", "minimum": 1}, "createdAt": {"type": "string", "format": "date-time"}, "updatedAt": {"type": "string", "format": "date-time"},
+    "shots": {"type": "array", "minItems": 4, "maxItems": 8, "items": {"type": "object", "additionalProperties": false, "required": ["id", "orderIndex", "shotSize", "cameraMovement", "visualDescription", "dialogue", "sound", "durationSeconds", "imagePrompt", "videoPrompt", "sourceQuote"], "properties": {"id": {"$ref": "shared.schema.json#/$defs/id"}, "orderIndex": {"type": "integer", "minimum": 0, "maximum": 7}, "shotSize": {"$ref": "shared.schema.json#/$defs/shotSize"}, "cameraMovement": {"$ref": "shared.schema.json#/$defs/cameraMovement"}, "visualDescription": {"type": "string", "minLength": 1, "maxLength": 2000}, "dialogue": {"type": "string", "maxLength": 1200}, "sound": {"type": "string", "maxLength": 1200}, "durationSeconds": {"type": "integer", "minimum": 1, "maximum": 30}, "imagePrompt": {"type": "string", "minLength": 1, "maxLength": 2000}, "videoPrompt": {"type": "string", "minLength": 1, "maxLength": 2500}, "sourceQuote": {"type": "string", "minLength": 1, "maxLength": 500}}}},
+    "proposalSummaries": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "targetShotId", "baseStoryboardRevision", "status", "createdAt"], "properties": {"id": {"$ref": "shared.schema.json#/$defs/id"}, "targetShotId": {"$ref": "shared.schema.json#/$defs/id"}, "baseStoryboardRevision": {"type": "integer", "minimum": 1}, "status": {"enum": ["PENDING", "ACCEPTED", "REJECTED"]}, "createdAt": {"type": "string", "format": "date-time"}}}}
+  }
+}

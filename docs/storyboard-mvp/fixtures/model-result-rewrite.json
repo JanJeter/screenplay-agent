@@ -1,0 +1,4 @@
+{
+  "mode":"rewrite",
+  "proposalShot":{"shotSize":"MEDIUM","cameraMovement":"STATIC","visualDescription":"许晴在茶几前拿起未拆的信，克制地看着林舟，保持原地。","dialogue":"许晴：那我先替你保管。","sound":"雨声持续。","durationSeconds":5,"imagePrompt":"许晴站在茶几前拿起未拆牛皮纸信，克制静态中景，冷色雨夜电影光","videoPrompt":"5秒静态中景，许晴从茶几拿起未拆信，看向林舟，全程不拆开","sourceQuote":"许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。"}
+}

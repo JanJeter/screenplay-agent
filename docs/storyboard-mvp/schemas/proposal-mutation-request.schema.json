@@ -1,0 +1,4 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/proposal-mutation-request.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["expectedRevision"], "properties": {"expectedRevision": {"type": "integer", "minimum": 1}}
+}

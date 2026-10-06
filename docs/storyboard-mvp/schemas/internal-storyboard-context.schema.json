@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/internal-storyboard-context.schema.json",
+  "$comment": "The compact UTF-8 wire JSON, including rewrite target and adjacent shots, is limited to 262144 bytes; see REPAIR_CONTRACT.md.",
+  "x-utf8WireMaxBytes": 262144,
+  "oneOf": [
+    {"type": "object", "additionalProperties": false, "required": ["mode", "targetShotCount", "instructions", "sourceSnapshot"], "properties": {"mode": {"const": "generate"}, "targetShotCount": {"type": "integer", "minimum": 4, "maximum": 8}, "instructions": {"type": "string", "maxLength": 1000}, "sourceSnapshot": {"$ref": "shared.schema.json#/$defs/sourceSnapshot"}}},
+    {"type": "object", "additionalProperties": false, "required": ["mode", "instruction", "storyboardId", "targetShotId", "baseStoryboardRevision", "sourceSnapshot", "targetShot", "previousShot", "nextShot"], "properties": {"mode": {"const": "rewrite"}, "instruction": {"type": "string", "minLength": 1, "maxLength": 1000}, "storyboardId": {"$ref": "shared.schema.json#/$defs/id"}, "targetShotId": {"$ref": "shared.schema.json#/$defs/id"}, "baseStoryboardRevision": {"type": "integer", "minimum": 1}, "sourceSnapshot": {"$ref": "shared.schema.json#/$defs/sourceSnapshot"}, "targetShot": {"$ref": "shared.schema.json#/$defs/editableShot"}, "previousShot": {"oneOf": [{"type": "null"}, {"$ref": "shared.schema.json#/$defs/editableShot"}]}, "nextShot": {"oneOf": [{"type": "null"}, {"$ref": "shared.schema.json#/$defs/editableShot"}]}}}
+  ]
+}

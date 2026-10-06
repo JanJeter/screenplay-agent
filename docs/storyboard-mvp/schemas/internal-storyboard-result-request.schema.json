@@ -1,0 +1,4 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/internal-storyboard-result-request.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["result"], "properties": {"result": {"$ref": "model-storyboard-result.schema.json"}}
+}

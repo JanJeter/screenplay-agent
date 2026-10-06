@@ -1,0 +1,13 @@
+{
+  "mode":"generate",
+  "shots":[
+    {"shotSize":"ESTABLISHING","cameraMovement":"STATIC","visualDescription":"旧公寓客厅与雨窗，许晴停在门边。","dialogue":"","sound":"雨敲着窗。","durationSeconds":3,"imagePrompt":"夜雨旧公寓客厅，许晴在门边，冷色电影广角","videoPrompt":"3秒静态广角，雨夜客厅，许晴停在门边","sourceQuote":"雨敲着窗。许晴站在门边，没有进来。"},
+    {"shotSize":"CLOSE_UP","cameraMovement":"DOLLY_IN","visualDescription":"抽屉中被林舟取出的完整牛皮纸信，封口未拆。","dialogue":"","sound":"雨声。","durationSeconds":3,"imagePrompt":"抽屉与未拆牛皮纸信特写，封口清楚，冷色电影光","videoPrompt":"3秒推近，林舟从抽屉取出封口完整的牛皮纸信","sourceQuote":"林舟从抽屉里拿出一封牛皮纸信，信封完整，封口未拆。"},
+    {"shotSize":"MEDIUM","cameraMovement":"STATIC","visualDescription":"许晴在门边向林舟开口，林舟手持未拆的信。","dialogue":"许晴：你说有东西要给我。","sound":"雨声。","durationSeconds":3,"imagePrompt":"许晴站在门边对林舟说话，林舟持未拆信，电影中景","videoPrompt":"3秒静态中景，许晴开口，林舟保持手持未拆信","sourceQuote":"许晴：你说有东西要给我。"},
+    {"shotSize":"MEDIUM","cameraMovement":"HANDHELD","visualDescription":"林舟把信藏到身后，短暂停顿。","dialogue":"","sound":"雨声。","durationSeconds":3,"imagePrompt":"林舟把未拆牛皮纸信藏在身后，紧张手持中景","videoPrompt":"3秒轻微手持，林舟把未拆信藏到身后并停顿","sourceQuote":"林舟把信藏到身后，停了两秒"},
+    {"shotSize":"CLOSE_UP","cameraMovement":"STATIC","visualDescription":"林舟把信放上茶几，封口保持完整。","dialogue":"林舟：不是现在。","sound":"雨声。","durationSeconds":3,"imagePrompt":"茶几上未拆牛皮纸信特写，林舟放下信，封口完整","videoPrompt":"3秒静态特写，林舟放下未拆信后手离开","sourceQuote":"又把它放到茶几上。\n\n林舟：不是现在。"},
+    {"shotSize":"MEDIUM","cameraMovement":"TRACK","visualDescription":"许晴走近茶几，手伸向未拆的信。","dialogue":"","sound":"雨声。","durationSeconds":3,"imagePrompt":"许晴走近茶几伸手取未拆信，侧向跟拍中景","videoPrompt":"3秒中景跟拍，许晴走到茶几伸手拿未拆信","sourceQuote":"许晴走到茶几前，拿起那封未拆的信。"},
+    {"shotSize":"CLOSE_UP","cameraMovement":"STATIC","visualDescription":"许晴拿着未拆信看着林舟，信封没有打开。","dialogue":"许晴：那我先替你保管。","sound":"雨声。","durationSeconds":3,"imagePrompt":"许晴手持未拆牛皮纸信看向林舟，电影近景，封口完整","videoPrompt":"3秒静态近景，许晴持未拆信说话，全程不打开","sourceQuote":"她没有打开，只看着林舟。\n\n许晴：那我先替你保管。"},
+    {"shotSize":"WIDE","cameraMovement":"STATIC","visualDescription":"两人隔着客厅沉默，许晴仍握着未拆的信。","dialogue":"","sound":"雨声更响了。","durationSeconds":3,"imagePrompt":"雨夜旧公寓两人沉默相对，许晴握未拆信，冷色电影广角","videoPrompt":"3秒静态广角，两人沉默对视，许晴保持握住未拆信，雨声加强","sourceQuote":"林舟没有回答。雨声更响了。"}
+  ]
+}

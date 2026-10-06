@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://screenplay.local/schemas/storyboard/run-response.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["id", "status", "errorCode", "createdAt", "startedAt", "endedAt", "resultRef"],
+  "properties": {
+    "id": {"$ref": "shared.schema.json#/$defs/id"}, "status": {"enum": ["QUEUED", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"]}, "errorCode": {"type": ["string", "null"], "maxLength": 80}, "createdAt": {"type": "string", "format": "date-time"}, "startedAt": {"type": ["string", "null"], "format": "date-time"}, "endedAt": {"type": ["string", "null"], "format": "date-time"},
+    "resultRef": {"oneOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["type", "id", "storyboardId"], "properties": {"type": {"enum": ["storyboard", "shot_proposal"]}, "id": {"$ref": "shared.schema.json#/$defs/id"}, "storyboardId": {"$ref": "shared.schema.json#/$defs/id"}}}]}
+  }
+}
