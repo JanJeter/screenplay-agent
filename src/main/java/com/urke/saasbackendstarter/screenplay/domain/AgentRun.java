@@ -55,6 +55,16 @@ public class AgentRun {
     @Column(name = "error_code", length = 80)
     private String errorCode;
 
+    /** Present only after the corresponding storyboard artifact was durably saved. */
+    @Column(name = "result_type", length = 24)
+    private String resultType;
+
+    @Column(name = "result_id", length = 36)
+    private String resultId;
+
+    @Column(name = "result_storyboard_id", length = 36)
+    private String resultStoryboardId;
+
     @Column(name = "started_at")
     private Instant startedAt;
 

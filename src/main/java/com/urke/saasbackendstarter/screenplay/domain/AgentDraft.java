@@ -52,6 +52,10 @@ public class AgentDraft {
     @Column(name = "payload_hash", nullable = false, length = 64)
     private String payloadHash;
 
+    /** Source scene for a scoped dialogue rewrite; null for report/proposal artifacts. */
+    @Column(name = "target_scene_id", length = 36)
+    private String targetSceneId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

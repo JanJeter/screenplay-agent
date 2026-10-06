@@ -14,6 +14,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.DispatcherTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import jakarta.servlet.DispatcherType;
+
+import java.util.List;
 
 /**
  * Security configuration for the application.
@@ -56,8 +65,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(org.springframework.security.config.Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // SseEmitter completion/re-dispatches do not reliably carry the original
+                // JWT through every servlet container. The initial REQUEST remains fully
+                // authenticated and AgentRunService checks run ownership before creating
+                // the emitter; only that already-authorized stream may continue on ASYNC.
+                .requestMatchers(new AndRequestMatcher(
+                        new DispatcherTypeRequestMatcher(DispatcherType.ASYNC),
+                        new AntPathRequestMatcher("/api/v1/screenplay/agent/runs/*/events"))).permitAll()
                 .requestMatchers(
                     "/api/v1/users/register",
                     "/api/v1/auth/**",
@@ -79,5 +96,19 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /** The standalone Vite workbench authenticates with an Authorization header, never cookies. */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Last-Event-ID", "Accept"));
+        configuration.setExposedHeaders(List.of("Content-Disposition"));
+        configuration.setAllowCredentials(false);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

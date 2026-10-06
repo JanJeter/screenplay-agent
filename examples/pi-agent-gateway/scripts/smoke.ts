@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
+import { hasValidProfileResult } from "../src/profiles.ts";
 
 const port = 31000 + Math.floor(Math.random() * 20000);
 const token = randomUUID();
@@ -27,6 +28,12 @@ async function object(response: Response): Promise<Record<string, unknown>> {
   return await response.json() as Record<string, unknown>;
 }
 try {
+  assert.equal(hasValidProfileResult("analyze_scene", {
+    summary: "x", issues: 123, evidence: null, suggestions: [],
+  }), false, "profile validation must reject scalar issues and null evidence");
+  assert.equal(hasValidProfileResult("check_plot_logic", {
+    contradictions: [], evidence: null, fixes: [],
+  }), false, "read-only profile still requires evidence schema");
   let ready = false;
   for (let i = 0; i < 100; i++) {
     try { ready = (await fetch(`${base}/health`, { signal: AbortSignal.timeout(200) })).ok; } catch { /* starting */ }
@@ -70,12 +77,23 @@ try {
   assert.match(replay, /^id: 3$/m);
   assert.doesNotMatch(replay, /^id: [12]$/m);
   assert.equal((await object(await call(`/agent/runs/${run.runId}`))).status, "completed");
+  for (const taskType of ["analyze_scene", "rewrite_dialogue", "extract_characters", "build_outline", "check_plot_logic"]) {
+    const specializedSession = await object(await call("/agent/sessions", {
+      projectId: "demo-project", screenplayId: "demo-screenplay", taskType,
+    }));
+    const specializedRun = await object(await call("/agent/chat", {
+      sessionId: specializedSession.sessionId, message: `执行 ${taskType} 专项任务`, clientRequestId: randomUUID(),
+    }));
+    const specializedWire = await (await call(`/agent/runs/${specializedRun.runId}/events`)).text();
+    assert.match(specializedWire, /event: run.completed/, `${taskType} should satisfy its result schema`);
+    if (taskType === "check_plot_logic") assert.doesNotMatch(specializedWire, /save_draft/);
+  }
   const second = await object(await call("/agent/chat", { ...request, clientRequestId: randomUUID() }));
   await object(await call(`/agent/runs/${second.runId}/cancel`, {}));
   const cancelled = await (await call(`/agent/runs/${second.runId}/events`)).text();
   assert.match(cancelled, /event: run.cancelled/);
   assert.doesNotMatch(cancelled, /event: run.completed/);
-  console.log("PASS: real Pi mock tool loop, incremental SSE, replay, auth/ownership, idempotency, concurrency, cancellation");
+  console.log("PASS: real Pi profile loops, schemas, incremental SSE, replay, auth/ownership, idempotency, concurrency, cancellation");
 } finally {
   child.kill();
 }

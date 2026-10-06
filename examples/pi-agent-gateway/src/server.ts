@@ -117,12 +117,19 @@ async function executeRun(session: Session, run: Run): Promise<void> {
       // Pi records provider errors in state; prompt() can resolve on failure.
       const last = session.runtime.agent.state.messages.at(-1);
       if (session.runtime.agent.state.errorMessage || last?.role !== "assistant" || last.stopReason !== "stop") {
+        console.error(`Agent run ${run.id} provider/tool failure: ${session.runtime.agent.state.errorMessage ?? "assistant did not stop cleanly"}`);
         failure = "generation_failed";
       } else if (!session.runtime.hasValidStructuredResult()) {
+        console.error(`Agent run ${run.id} ended without a valid structured result acknowledgement`);
         failure = "invalid_structured_output";
       }
     }
-  } catch { failure = "generation_failed"; }
+  } catch (error) {
+    // Keep request/context/model content out of logs; the reason is enough to
+    // distinguish an adapter or schema failure from a model interruption.
+    console.error(`Agent run ${run.id} failed: ${error instanceof Error ? error.message : "unknown error"}`);
+    failure = "generation_failed";
+  }
   finally {
     clearTimeout(timer);
     run.status = run.stopReason === "user_cancelled" ? "cancelled" : run.stopReason || failure ? "failed" : "completed";

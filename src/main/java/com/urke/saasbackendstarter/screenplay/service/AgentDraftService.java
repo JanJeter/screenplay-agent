@@ -5,6 +5,8 @@ import com.urke.saasbackendstarter.screenplay.domain.AgentDraftStatus;
 import com.urke.saasbackendstarter.screenplay.dto.agent.AgentDraftResponse;
 import com.urke.saasbackendstarter.screenplay.dto.agent.SaveAgentDraftRequest;
 import com.urke.saasbackendstarter.screenplay.repository.AgentDraftRepository;
+import com.urke.saasbackendstarter.screenplay.repository.ScriptSceneRepository;
+import com.urke.saasbackendstarter.screenplay.domain.AgentTaskType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import jakarta.persistence.EntityManager;
 @RequiredArgsConstructor
 public class AgentDraftService {
     private final AgentDraftRepository drafts;
+    private final ScriptSceneRepository scenes;
     private final EntityManager entityManager;
 
     @Transactional
@@ -39,11 +42,16 @@ public class AgentDraftService {
         if (request.sourceVersion() < 0 || request.sourceVersion() != authorized.script().getContentRevision()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Screenplay content revision has changed");
         }
+        AgentTaskType taskType = authorized.run().getSession().getTaskType();
+        if (taskType == AgentTaskType.CHECK_PLOT_LOGIC) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Plot logic checks are read-only and cannot save drafts");
+        }
+        String targetSceneId = validateTargetScene(taskType, request.targetSceneId(), authorized.script().getId());
         entityManager.createNativeQuery("select pg_advisory_xact_lock(hashtext(?1))")
                 .setParameter(1, "draft:" + authorized.run().getSession().getOrganization().getId() + ":" + idempotencyKey)
                 .getSingleResult();
         String payloadHash = hash(request.screenplayId() + "\n" + request.sessionId() + "\n"
-                + request.sourceVersion() + "\n" + request.content());
+                + request.sourceVersion() + "\n" + request.content() + "\n" + (targetSceneId == null ? "" : targetSceneId));
         return drafts.findByOrganizationIdAndIdempotencyKey(authorized.run().getSession().getOrganization().getId(), idempotencyKey)
                 .map(existing -> {
                     if (!existing.getPayloadHash().equals(payloadHash)) {
@@ -62,6 +70,7 @@ public class AgentDraftService {
                     draft.setStatus(AgentDraftStatus.PENDING_REVIEW);
                     draft.setIdempotencyKey(idempotencyKey);
                     draft.setPayloadHash(payloadHash);
+                    draft.setTargetSceneId(targetSceneId);
                     return response(drafts.saveAndFlush(draft));
                 });
     }
@@ -76,6 +85,27 @@ public class AgentDraftService {
                     .digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
+    }
+
+    private String validateTargetScene(AgentTaskType taskType, String targetSceneId, Long scriptId) {
+        if (taskType != AgentTaskType.REWRITE_DIALOGUE) {
+            if (targetSceneId != null && !targetSceneId.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only dialogue rewrites may target a scene");
+            }
+            return null;
+        }
+        if (targetSceneId == null || targetSceneId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dialogue rewrite requires targetSceneId");
+        }
+        try {
+            long sceneId = Long.parseLong(targetSceneId);
+            if (scenes.findByIdAndScriptVersionId(sceneId, scriptId).isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Target scene not found");
+            }
+            return Long.toString(sceneId);
+        } catch (NumberFormatException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetSceneId must be numeric");
         }
     }
 }

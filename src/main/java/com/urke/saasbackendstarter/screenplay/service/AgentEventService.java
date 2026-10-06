@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.urke.saasbackendstarter.screenplay.domain.AgentEvent;
 import com.urke.saasbackendstarter.screenplay.domain.AgentRun;
+import com.urke.saasbackendstarter.screenplay.domain.AgentRunStatus;
+import com.urke.saasbackendstarter.screenplay.repository.AgentDraftRepository;
 import com.urke.saasbackendstarter.screenplay.repository.AgentEventRepository;
 import com.urke.saasbackendstarter.screenplay.repository.AgentRunRepository;
 import jakarta.persistence.EntityManager;
@@ -14,21 +16,72 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class AgentEventService {
     private final AgentEventRepository events;
     private final AgentRunRepository runs;
+    private final AgentDraftRepository drafts;
+    private final AgentSessionLeaseService leases;
+    private final AgentTranscriptService transcript;
     private final ObjectMapper json;
     private final EntityManager entityManager;
 
     @Transactional
-    public boolean record(String runId, long sequence, String type, JsonNode payload) {
+    public PersistedEvent record(String runId, long sequence, String type, JsonNode payload) {
         entityManager.createNativeQuery("select pg_advisory_xact_lock(hashtext(?1))")
                 .setParameter(1, "event:" + runId + ":" + sequence).getSingleResult();
-        if (events.findByRunIdAndSequence(runId, sequence).isPresent()) return false;
-        AgentRun run = runs.findById(runId).orElseThrow(() -> new IllegalArgumentException("Agent run not found"));
+        if (events.findByRunIdAndSequence(runId, sequence).isPresent()) return null;
+        AgentRun run = runs.findLockedById(runId).orElseThrow(() -> new IllegalArgumentException("Agent run not found"));
+        return persist(run, sequence, type, payload);
+    }
+
+    /**
+     * Makes Java's state machine authoritative for terminal events. The run
+     * state, persisted terminal event and final assistant transcript share one
+     * transaction, so browsers cannot observe a completed run that Java later
+     * reclassifies as failed because its required draft is absent.
+     */
+    @Transactional
+    public PersistedEvent recordTerminal(String runId, long sequence, String gatewayType, JsonNode gatewayPayload) {
+        entityManager.createNativeQuery("select pg_advisory_xact_lock(hashtext(?1))")
+                .setParameter(1, "event:" + runId + ":" + sequence).getSingleResult();
+        if (events.findByRunIdAndSequence(runId, sequence).isPresent()) return null;
+        AgentRun run = runs.findLockedById(runId).orElseThrow(() -> new IllegalArgumentException("Agent run not found"));
+
+        AgentRunStatus status = run.getStatus();
+        String errorCode = run.getErrorCode();
+        if (!terminal(status)) {
+            if ("run.cancelled".equals(gatewayType) || status == AgentRunStatus.CANCELLING) {
+                status = AgentRunStatus.CANCELLED;
+                errorCode = null;
+            } else if ("run.completed".equals(gatewayType)
+                    && (!run.getSession().getTaskType().requiresDraft() || drafts.existsByRunId(runId))) {
+                status = AgentRunStatus.COMPLETED;
+                errorCode = null;
+            } else {
+                status = AgentRunStatus.FAILED;
+                errorCode = "run.completed".equals(gatewayType) ? "draft_missing" : "gateway_failed";
+            }
+            run.setStatus(status);
+            run.setErrorCode(errorCode);
+            run.setEndedAt(Instant.now());
+            leases.release(run.getSession().getId(), run.getId());
+        }
+
+        String type = status == AgentRunStatus.COMPLETED ? "run.completed"
+                : status == AgentRunStatus.CANCELLED ? "run.cancelled" : "run.failed";
+        JsonNode payload = gatewayPayload == null ? json.createObjectNode() : gatewayPayload.deepCopy();
+        if (payload.isObject() && errorCode != null) ((com.fasterxml.jackson.databind.node.ObjectNode) payload).put("errorCode", errorCode);
+        PersistedEvent persisted = persist(run, sequence, type, payload);
+        String assistant = assistantText(runId);
+        if (!assistant.isBlank()) transcript.append(run, "assistant", assistant);
+        return persisted;
+    }
+
+    private PersistedEvent persist(AgentRun run, long sequence, String type, JsonNode payload) {
         AgentEvent event = new AgentEvent();
         event.setId(UUID.randomUUID().toString());
         event.setRun(run);
@@ -37,7 +90,7 @@ public class AgentEventService {
         try { event.setPayload(json.writeValueAsString(payload)); }
         catch (JsonProcessingException ex) { throw new IllegalArgumentException("Invalid Gateway event", ex); }
         events.save(event);
-        return true;
+        return new PersistedEvent(sequence, type, payload);
     }
 
     @Transactional(readOnly = true)
@@ -58,6 +111,11 @@ public class AgentEventService {
     private JsonNode parse(String payload) {
         try { return json.readTree(payload); }
         catch (JsonProcessingException ex) { throw new IllegalStateException("Stored Agent event is invalid", ex); }
+    }
+
+    private boolean terminal(AgentRunStatus status) {
+        return status == AgentRunStatus.COMPLETED || status == AgentRunStatus.FAILED
+                || status == AgentRunStatus.CANCELLED || status == AgentRunStatus.INTERRUPTED;
     }
 
     public record PersistedEvent(long sequence, String type, JsonNode payload) { }

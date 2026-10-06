@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.access.AccessDeniedException;
+import com.urke.saasbackendstarter.screenplay.service.StoryboardApiException;
+import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -108,6 +111,11 @@ public class RestExceptionHandler {
                 .body(new ErrorDTO("error", message));
     }
 
+    @ExceptionHandler(StoryboardApiException.class)
+    public ResponseEntity<StoryboardErrorDTO> handleStoryboard(StoryboardApiException ex) {
+        return ResponseEntity.status(ex.status()).body(new StoryboardErrorDTO(ex.code(), ex.code(), UUID.randomUUID().toString(), ex.currentRevision()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleUnknown(Exception ex, WebRequest request) {
         Locale locale = request.getLocale();
@@ -154,4 +162,7 @@ public class RestExceptionHandler {
         private String status;
         private String message;
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record StoryboardErrorDTO(String code, String message, String traceId, Long currentRevision) { }
 }

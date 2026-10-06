@@ -49,7 +49,7 @@ class AgentRunServiceSubtaskTest {
     @Mock private AgentRunWorker worker;
     @Mock private AgentTranscriptService transcript;
     @Mock private AgentEventService events;
-    @Mock private AgentGatewayEventProjector projector;
+    @Mock private AgentEventBroadcaster broadcaster;
     @Mock private AgentOutboxService outbox;
     @Mock private AgentGatewayDispatchService dispatcher;
     @Mock private AgentGatewayClient gateway;
@@ -62,7 +62,7 @@ class AgentRunServiceSubtaskTest {
     void setUp() {
         TransactionSynchronizationManager.initSynchronization();
         service = new AgentRunService(currentUser, projects, scripts, sessions, runs, worker, transcript,
-                events, projector, outbox, dispatcher, gateway, entityManager, executor);
+                events, broadcaster, outbox, dispatcher, gateway, entityManager);
     }
 
     @AfterEach

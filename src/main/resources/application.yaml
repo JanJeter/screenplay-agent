@@ -4,6 +4,12 @@
 # =========================
 
 spring:
+  sql:
+    init:
+      # Runs the idempotent PostgreSQL compatibility migration before JPA validates/updates mappings.
+      mode: always
+      # schema.sql contains a PostgreSQL DO block with internal semicolons.
+      separator: "@@"
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:55432/saas_backend}
     username: ${SPRING_DATASOURCE_USERNAME:saas_user}

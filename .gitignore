@@ -58,3 +58,8 @@ hs_err_pid*
 
 # VS Code Java project settings
 .vscode/
+
+# Standalone storyboard web client build output
+/apps/storyboard-web/node_modules/
+/apps/storyboard-web/dist/
+/apps/storyboard-web/*.tsbuildinfo

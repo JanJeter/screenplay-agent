@@ -11,10 +11,8 @@ import com.urke.saasbackendstarter.screenplay.repository.ScreenplayProjectReposi
 import com.urke.saasbackendstarter.security.CurrentUserProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -41,12 +39,13 @@ public class AgentRunService {
     private final AgentRunWorker worker;
     private final AgentTranscriptService transcript;
     private final AgentEventService events;
-    private final AgentGatewayEventProjector projector;
+    private final AgentEventBroadcaster broadcaster;
     private final AgentOutboxService outbox;
     private final AgentGatewayDispatchService dispatcher;
     private final AgentGatewayClient gateway;
     private final EntityManager entityManager;
-    @Qualifier("agentGatewayExecutor") private final AsyncTaskExecutor executor;
+    @jakarta.annotation.Resource(name = "agentControlExecutor")
+    private AsyncTaskExecutor controlExecutor;
 
     @Transactional
     public AgentSessionResponse createSession(Long projectId, CreateAgentSessionRequest request) {
@@ -75,7 +74,10 @@ public class AgentRunService {
     public AgentRunResponse submit(String sessionId, CreateAgentMessageRequest request) {
         User user = currentUser.getCurrentUser();
         AgentSession session = ownedSession(sessionId, user);
-        advisoryLock("run:" + organizationId(user) + ":" + sessionId + ":" + request.clientRequestId());
+        // Serialize every new submission for one session. The idempotency lookup
+        // remains per requestId, but different requests must not both pass the
+        // active-run check before either inserts its run.
+        advisoryLock("run:" + organizationId(user) + ":" + sessionId);
         String requestHash = hash(request.message());
         var existing = runs.findBySessionIdAndRequestId(sessionId, request.clientRequestId());
         if (existing.isPresent()) {
@@ -182,18 +184,18 @@ public class AgentRunService {
     public SseEmitter events(String runId, String lastEventId) {
         ownedRun(runId, currentUser.getCurrentUser());
         long after = cursor(lastEventId);
-        SseEmitter emitter = new SseEmitter(150_000L);
-        emitter.onTimeout(() -> emitter.complete());
-        executor.execute(() -> replayThenRelay(runId, after, emitter));
-        return emitter;
+        return broadcaster.subscribe(runId, after);
     }
 
     @Transactional
     public AgentRunResponse cancel(String runId) {
-        AgentRun run = ownedRun(runId, currentUser.getCurrentUser());
+        // Take the row lock on the first read. Re-locking after an ordinary
+        // managed lookup does not refresh that old entity, which can otherwise
+        // flush CANCELLING over a terminal state committed in another transaction.
+        AgentRun run = ownedRunLocked(runId, currentUser.getCurrentUser());
         java.util.List<AgentRun> cancellationTargets = new java.util.ArrayList<>();
         cancellationTargets.add(run);
-        cancellationTargets.addAll(runs.findAllByParentRunIdAndStatusIn(runId,
+        cancellationTargets.addAll(runs.findAllLockedByParentRunIdAndStatusIn(runId,
                 java.util.List.of(AgentRunStatus.QUEUED, AgentRunStatus.RUNNING, AgentRunStatus.FINALIZING, AgentRunStatus.CANCELLING)));
         java.util.List<GatewayCancellation> cancellations = new java.util.ArrayList<>();
         for (AgentRun target : cancellationTargets) {
@@ -203,7 +205,7 @@ public class AgentRunService {
         if (!cancellations.isEmpty()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override public void afterCommit() {
-                    for (GatewayCancellation cancellation : cancellations) executor.execute(() -> {
+                    for (GatewayCancellation cancellation : cancellations) controlExecutor.execute(() -> {
                         try { gateway.cancel(cancellation.gatewayRunId(), cancellation.userId()); }
                         catch (RuntimeException ex) { worker.failure(cancellation.runId(), "gateway_cancel_failed"); }
                     });
@@ -213,62 +215,6 @@ public class AgentRunService {
         return getRun(runId);
     }
 
-    private void relay(String runId, String gatewayRunId, Long userId, long after, SseEmitter emitter) {
-        try {
-            gateway.streamEvents(gatewayRunId, userId, after, event -> {
-                projector.project(runId, event);
-                try {
-                    emitter.send(SseEmitter.event().id(event.id()).name(event.type())
-                            .data(event.data(), MediaType.APPLICATION_JSON));
-                } catch (java.io.IOException ex) {
-                    throw new RelayStoppedException();
-                }
-            });
-            emitter.complete();
-        } catch (RelayStoppedException ignored) {
-            emitter.complete();
-        } catch (Exception ex) {
-            emitter.completeWithError(ex);
-        }
-    }
-
-    private void relayWhenAvailable(String runId, long after, SseEmitter emitter) {
-        try {
-            for (int attempt = 0; attempt < 100; attempt++) {
-                var reference = worker.gatewayReference(runId);
-                if (reference.gatewayRunId() != null) {
-                    relay(runId, reference.gatewayRunId(), reference.userId(), after, emitter);
-                    return;
-                }
-                if (reference.status() == AgentRunStatus.FAILED || reference.status() == AgentRunStatus.CANCELLED
-                        || reference.status() == AgentRunStatus.COMPLETED || reference.status() == AgentRunStatus.INTERRUPTED) {
-                    emitter.complete();
-                    return;
-                }
-                Thread.sleep(200);
-            }
-            emitter.completeWithError(new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT, "Agent dispatch timed out"));
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            emitter.complete();
-        } catch (RuntimeException ex) {
-            emitter.completeWithError(ex);
-        }
-    }
-
-    private void replayThenRelay(String runId, long after, SseEmitter emitter) {
-        long cursor = after;
-        try {
-            for (var event : events.after(runId, after)) {
-                emitter.send(SseEmitter.event().id(Long.toString(event.sequence())).name(event.type())
-                        .data(event.payload(), MediaType.APPLICATION_JSON));
-                cursor = event.sequence();
-            }
-            relayWhenAvailable(runId, cursor, emitter);
-        } catch (java.io.IOException ex) {
-            emitter.complete();
-        }
-    }
 
     private AgentSession ownedSession(String id, User user) {
         return sessions.findByIdAndOrganizationIdAndUserId(id, organizationId(user), user.getId())
@@ -277,6 +223,11 @@ public class AgentRunService {
 
     private AgentRun ownedRun(String id, User user) {
         return runs.findByIdAndSessionOrganizationIdAndSessionUserId(id, organizationId(user), user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent run not found"));
+    }
+
+    private AgentRun ownedRunLocked(String id, User user) {
+        return runs.findLockedByIdAndSessionOrganizationIdAndSessionUserId(id, organizationId(user), user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agent run not found"));
     }
 
@@ -290,7 +241,8 @@ public class AgentRunService {
     private AgentRunResponse response(AgentRun run) {
         return new AgentRunResponse(run.getId(), run.getSession().getId(),
                 run.getParentRun() == null ? null : run.getParentRun().getId(), run.getAgentId(), run.getTraceId(), run.getStatus().name().toLowerCase(),
-                run.getErrorCode(), run.getCreatedAt(), run.getStartedAt(), run.getEndedAt());
+                run.getErrorCode(), run.getCreatedAt(), run.getStartedAt(), run.getEndedAt(),
+                run.getResultId() == null ? null : new AgentRunResponse.ResultRef(run.getResultType(), run.getResultId(), run.getResultStoryboardId()));
     }
 
     private long cursor(String value) {
@@ -315,5 +267,4 @@ public class AgentRunService {
                                   String applicationRunId, String executionToken, String requestId, String message,
                                   String taskType) { }
     private record GatewayCancellation(String gatewayRunId, Long userId, String runId) { }
-    private static class RelayStoppedException extends RuntimeException { }
 }

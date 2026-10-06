@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { Type } from "@earendil-works/pi-ai";
 import { profileFor, type TaskType } from "./profiles.ts";
+import { STORYBOARD_MAX_CONTEXT_BYTES } from "./storyboard-schema.ts";
 
 export interface SessionScope {
   userId: string;
@@ -27,14 +28,20 @@ interface Draft {
   draftId: string;
   status: "pending_review";
 }
+interface DialoguePatch { original: string; proposed: string; sourceOffset: number; }
 interface SceneSummary { sceneId: string; sceneNo: string; heading: string; sortOrder: number; }
 interface Scene { screenplayId: string; projectId: string; sceneId: string; heading: string; content: string; version: number; }
 
 const MAX_RESPONSE_BYTES = 64 * 1024;
 const MAX_SCENE_CHARS = 12_000;
+const normalizeLineEndings = (value: string) => value.replace(/\r\n?/g, "\n");
+const contentEnd = (value: string) => value.replace(/\n+$/, "").length;
 const emptyParams = Type.Object({}, { additionalProperties: false });
 const draftParams = Type.Object(
-  { content: Type.String({ minLength: 1, maxLength: MAX_SCENE_CHARS }) },
+  {
+    content: Type.String({ minLength: 1, maxLength: MAX_SCENE_CHARS }),
+    targetSceneId: Type.Optional(Type.String({ minLength: 1, maxLength: 36 })),
+  },
   { additionalProperties: false },
 );
 const sceneParams = Type.Object(
@@ -48,12 +55,13 @@ const delegateParams = Type.Object(
 
 // These /internal/agent routes are PROPOSED Java adapters; the current backend
 // does not implement them. Map rawText/versionLabel in those adapters.
-async function javaRequest(
+export async function requestJavaAdapter(
   scope: SessionScope,
   path: string,
   signal?: AbortSignal,
   body?: Record<string, unknown>,
   idempotencyKey?: string,
+  maxResponseBytes = MAX_RESPONSE_BYTES,
 ): Promise<unknown> {
   const base = new URL(process.env.JAVA_BASE_URL ?? "http://127.0.0.1:8080");
   if (!["http:", "https:"].includes(base.protocol) || base.username || base.password || base.search || base.hash) {
@@ -79,6 +87,14 @@ async function javaRequest(
     throw new Error(`Java adapter returned HTTP ${response.status}`);
   }
   if (!response.body) throw new Error("Java adapter returned an empty body");
+  const declaredLength = response.headers.get("content-length");
+  if (declaredLength !== null) {
+    const byteLength = Number(declaredLength);
+    if (!Number.isSafeInteger(byteLength) || byteLength < 0 || byteLength > maxResponseBytes) {
+      await response.body.cancel();
+      throw new Error("Java response exceeds its UTF-8 byte budget");
+    }
+  }
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let bytes = 0;
@@ -87,9 +103,9 @@ async function javaRequest(
       const { done, value } = await reader.read();
       if (done) break;
       bytes += value.byteLength;
-      if (bytes > MAX_RESPONSE_BYTES) {
+      if (bytes > maxResponseBytes) {
         await reader.cancel();
-        throw new Error("Java response is too large; retrieve a scene-sized excerpt");
+        throw new Error("Java response exceeds its UTF-8 byte budget");
       }
       chunks.push(value);
     }
@@ -126,6 +142,8 @@ function readScreenplay(value: unknown, scope: SessionScope): Screenplay {
 
 export function createScreenplayTools(scope: SessionScope): AgentTool[] {
   let loadedVersion: number | undefined;
+  let loadedSceneId: string | undefined;
+  let loadedSceneContent: string | undefined;
   // Small per-session demonstration store; process restart loses these drafts.
   const drafts = new Map<string, { content: string; sourceVersion: number; result: Draft }>();
   const projectPath = `/internal/agent/projects/${encodeURIComponent(scope.projectId)}`;
@@ -140,10 +158,12 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
     parameters: emptyParams,
     async execute(_toolCallId, _params, signal, onUpdate) {
       loadedVersion = undefined;
+      loadedSceneId = undefined;
+      loadedSceneContent = undefined;
       signal?.throwIfAborted();
       onUpdate?.({ content: [{ type: "text", text: "正在读取当前剧本" }], details: { stage: "loading" } });
       const screenplay = process.env.JAVA_MODE === "http"
-        ? readScreenplay(await javaRequest(scope, `${projectPath}/screenplays/${encodeURIComponent(scope.screenplayId)}`, signal), scope)
+        ? readScreenplay(await requestJavaAdapter(scope, `${projectPath}/screenplays/${encodeURIComponent(scope.screenplayId)}`, signal), scope)
         : {
             screenplayId: scope.screenplayId, projectId: scope.projectId,
             title: "雨夜重逢（演示素材）", version: 1,
@@ -162,7 +182,7 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
     async execute(_toolCallId, _params, signal) {
       signal?.throwIfAborted();
       const value = process.env.JAVA_MODE === "http"
-        ? await javaRequest(scope, `${projectPath}/screenplays/${encodeURIComponent(scope.screenplayId)}/scenes`, signal)
+        ? await requestJavaAdapter(scope, `${projectPath}/screenplays/${encodeURIComponent(scope.screenplayId)}/scenes`, signal)
         : [{ sceneId: "demo-scene-1", sceneNo: "1", heading: "旧车站 - 夜", sortOrder: 0 }];
       if (!Array.isArray(value) || value.length > 200 || value.some(item => !item || typeof item !== "object"
         || typeof (item as Partial<SceneSummary>).sceneId !== "string" || typeof (item as Partial<SceneSummary>).heading !== "string")) {
@@ -180,7 +200,7 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
     async execute(_toolCallId, params, signal) {
       signal?.throwIfAborted();
       const value = process.env.JAVA_MODE === "http"
-        ? await javaRequest(scope, `${projectPath}/screenplays/${encodeURIComponent(scope.screenplayId)}/scenes/${encodeURIComponent(params.sceneId)}`, signal)
+        ? await requestJavaAdapter(scope, `${projectPath}/screenplays/${encodeURIComponent(scope.screenplayId)}/scenes/${encodeURIComponent(params.sceneId)}`, signal)
         : { screenplayId: scope.screenplayId, projectId: scope.projectId, sceneId: params.sceneId,
             heading: "旧车站 - 夜", content: "内景，旧车站，夜。林舟把信藏到身后。", version: 1 };
       if (!value || typeof value !== "object") throw new Error("Invalid scene response");
@@ -191,6 +211,8 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
         throw new Error("Java scene response did not match the bound session scope");
       }
       loadedVersion = scene.version;
+      loadedSceneId = scene.sceneId;
+      loadedSceneContent = scene.content;
       return { content: [{ type: "text", text: JSON.stringify(scene) }], details: { version: scene.version, sceneId: scene.sceneId } };
     },
   };
@@ -205,7 +227,7 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
       if (!scope.applicationRunId) throw new Error("Subtask delegation requires an application run context");
       const allowed = new Set(["analyze_scene", "rewrite_dialogue", "extract_characters", "build_outline", "check_plot_logic"]);
       if (!allowed.has(params.taskType)) throw new Error("Unsupported delegated taskType");
-      const response = await javaRequest(scope,
+      const response = await requestJavaAdapter(scope,
         `${projectPath}/runs/${encodeURIComponent(scope.applicationRunId)}/subtasks`, signal,
         { taskType: params.taskType, message: params.message, clientRequestId: toolCallId }, `${boundSessionId}:${toolCallId}`);
       if (!response || typeof response !== "object" || !("id" in response) || !("status" in response)
@@ -226,19 +248,47 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
     async execute(toolCallId, params, signal, onUpdate) {
       signal?.throwIfAborted();
       if (loadedVersion === undefined) throw new Error("Call get_screenplay before saving a draft");
+      const profile = profileFor(scope.taskType);
+      let content = params.content;
+      if (profile.id === "rewrite_dialogue" && (!params.targetSceneId || params.targetSceneId !== loadedSceneId)) {
+        throw new Error("Dialogue rewrites must target the scene most recently loaded with get_scene");
+      }
+      if (profile.id === "rewrite_dialogue") {
+        let patch: DialoguePatch;
+        try { patch = JSON.parse(params.content) as DialoguePatch; }
+        catch { throw new Error("Dialogue rewrites must save a JSON in-scene patch"); }
+        patch = {
+          original: typeof patch.original === "string" ? normalizeLineEndings(patch.original) : patch.original,
+          proposed: typeof patch.proposed === "string" ? normalizeLineEndings(patch.proposed) : patch.proposed,
+          sourceOffset: patch.sourceOffset,
+        };
+        if (!loadedSceneContent || typeof patch.original !== "string" || !patch.original.trim()
+          || typeof patch.proposed !== "string" || !patch.proposed.trim()
+          || !Number.isSafeInteger(patch.sourceOffset) || patch.sourceOffset < 0
+          || normalizeLineEndings(loadedSceneContent).slice(patch.sourceOffset, patch.sourceOffset + patch.original.length) !== patch.original
+          || patch.sourceOffset + patch.original.length > contentEnd(normalizeLineEndings(loadedSceneContent))) {
+          throw new Error("Dialogue patch must match the most recently loaded scene");
+        }
+        // Persist the same LF-normalized representation used by Java when it
+        // validates offsets and rebuilds the accepted ScriptVersion.
+        content = JSON.stringify(patch);
+      }
+      if (profile.id !== "rewrite_dialogue" && params.targetSceneId !== undefined) {
+        throw new Error("Only dialogue rewrites may set targetSceneId");
+      }
       onUpdate?.({ content: [{ type: "text", text: "正在保存待审核草稿" }], details: { stage: "saving" } });
       const key = `${boundSessionId}:${toolCallId}`;
       const existing = drafts.get(key);
       let result: Draft;
       if (existing) {
-        if (existing.content !== params.content || existing.sourceVersion !== loadedVersion) {
+        if (existing.content !== content || existing.sourceVersion !== loadedVersion) {
           throw new Error("Idempotency key conflicts with an earlier draft payload");
         }
         result = existing.result;
       } else if (process.env.JAVA_MODE === "http") {
-        const response = await javaRequest(scope, `${projectPath}/drafts`, signal, {
+        const response = await requestJavaAdapter(scope, `${projectPath}/drafts`, signal, {
           screenplayId: scope.screenplayId, sessionId: boundSessionId,
-          content: params.content, sourceVersion: loadedVersion,
+          content, sourceVersion: loadedVersion, targetSceneId: params.targetSceneId,
         }, key);
         if (!response || typeof response !== "object" || !("draftId" in response) ||
           typeof response.draftId !== "string" || response.draftId.length > 128 ||
@@ -249,7 +299,7 @@ export function createScreenplayTools(scope: SessionScope): AgentTool[] {
       } else {
         result = { draftId: randomUUID(), status: "pending_review" };
       }
-      drafts.set(key, { content: params.content, sourceVersion: loadedVersion, result });
+      drafts.set(key, { content, sourceVersion: loadedVersion, result });
       if (drafts.size > 32) drafts.delete(drafts.keys().next().value!);
       return { content: [{ type: "text", text: JSON.stringify(result) }], details: result };
     },

@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json src/server.ts",
     "check": "node ../../pi-agent/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
-    "smoke": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/smoke.ts"
+    "smoke": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/smoke.ts",
+    "storyboard:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/storyboard-contract.ts"
   },
   "engines": { "node": ">=22.19.0" }
 }

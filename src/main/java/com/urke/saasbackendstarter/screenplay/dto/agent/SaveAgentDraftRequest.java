@@ -8,6 +8,7 @@ public record SaveAgentDraftRequest(
         @NotBlank @Size(max = 128) String screenplayId,
         @NotBlank @Size(max = 128) String sessionId,
         @NotBlank @Size(max = 12_000) String content,
-        @NotNull Long sourceVersion
+        @NotNull Long sourceVersion,
+        @Size(max = 36) String targetSceneId
 ) {
 }

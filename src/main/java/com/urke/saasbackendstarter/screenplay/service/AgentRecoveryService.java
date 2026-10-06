@@ -16,14 +16,18 @@ import java.util.List;
 public class AgentRecoveryService {
     private final AgentRunRepository runs;
     private final AgentOutboxService outbox;
+    private final AgentSessionLeaseService leases;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void interruptRunsLeftOpenByRestart() {
-        for (var run : runs.findAllByStatusIn(List.of(AgentRunStatus.QUEUED, AgentRunStatus.RUNNING, AgentRunStatus.CANCELLING))) {
+        for (var run : runs.findAllByStatusIn(List.of(AgentRunStatus.QUEUED, AgentRunStatus.RUNNING, AgentRunStatus.FINALIZING, AgentRunStatus.CANCELLING))) {
             run.setStatus(AgentRunStatus.INTERRUPTED);
             run.setErrorCode("process_restarted");
             run.setEndedAt(Instant.now());
+            // A lease owner is the old application run ID. Release it while
+            // marking the run terminal so the session is not permanently wedged.
+            leases.release(run.getSession().getId(), run.getId());
         }
         // Never replay a possibly side-effecting tool call after a process crash.
         // Operators can inspect the interrupted run and its persisted events.
