@@ -188,6 +188,15 @@ export function validateSavedStoryboardAcknowledgement(value: unknown): SavedSto
   return { artifactId: value.artifactId, resultRef: { type: value.resultRef.type, id: value.resultRef.id, storyboardId: value.resultRef.storyboardId } };
 }
 
+/** Accept a JSON receipt, optionally wrapped in one complete Markdown JSON fence. */
+export function parseSavedStoryboardAcknowledgement(text: string): SavedStoryboardResult {
+  const trimmed = text.trim();
+  const fenced = /^```(?:json)?[\t ]*\r?\n([\s\S]*?)\r?\n```$/i.exec(trimmed);
+  // Do not extract JSON from prose or multiple blocks. The strict receipt
+  // validator still rejects extra fields, malformed IDs and invalid types.
+  return validateSavedStoryboardAcknowledgement(JSON.parse(fenced ? fenced[1] : trimmed));
+}
+
 /** Both values must be valid receipts and refer to the exact persisted artifact. */
 export function hasEquivalentSavedStoryboardAcknowledgement(candidate: unknown, saved: unknown): boolean {
   try {

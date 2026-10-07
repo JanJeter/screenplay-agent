@@ -66,6 +66,7 @@ pi-agent-gateway/
 | `POST /agent/chat` | `{sessionId, message, clientRequestId}` → 202 `{runId}` |
 | `GET /agent/runs/{runId}` | `{runId,status}` |
 | `GET /agent/runs/{runId}/events` | SSE，支持 `Last-Event-ID` 或 `?after=N` |
+| `GET /agent/runs/{runId}/ledger` | 终态后查询逐 provider 请求的 usage、费用/失败记录及当前进程预算；使用相同服务鉴权和用户归属校验 |
 | `POST /agent/runs/{runId}/cancel` | 请求取消；以终态事件为准 |
 
 同一个 session 同时只跑一次，冲突返回 409。相同 session + clientRequestId + message 返回原 run；复用 key 但更换 message 返回 409。幂等范围只在当前进程、保留期内，生产应存数据库。
@@ -76,14 +77,62 @@ SSE 断开只停止订阅，run 继续；用户点停止才调用 cancel。事�
 
 ## 接入真实 LLM
 
+live 支持通过 `PI_PROVIDER` 选择 Anthropic 或 DeepSeek 官方 API；凭据只从 Gateway 本地进程环境读取，不读取 coding-agent 的用户 OAuth 配置。先通过 secret store 向进程注入所选 provider 的凭据和与 Java 匹配的服务凭据，不能把实际密钥写入命令历史、仓库、日志或前端环境。
+
+共同配置（Java 必须已提供可用的持久化链路）：
+
 ```powershell
 $env:AGENT_MODE = 'live'
-$env:ANTHROPIC_API_KEY = '<通过本地安全环境配置实际密钥>'
+$env:JAVA_MODE = 'http'
+$env:JAVA_BASE_URL = 'http://127.0.0.1:8080'
+$env:SB12_BUDGET_USD = '1'
+# AGENT_GATEWAY_TOKEN 已由安全环境注入，须与 Java 一致。
+# SB12_INPUT_TOKEN_RESERVE、SB12_PROVIDER_INPUT_OVERHEAD_TOKENS
+# 须按冻结的完整提示词、工具 schema、上下文及模型轮次核定后注入，不能直接照抄其他批次。
+```
+
+**DeepSeek 官方配置**：`DEEPSEEK_API_KEY` 必须通过安全环境注入；本例使用官方 endpoint `https://api.deepseek.com`，沿本地 Pi 的 `openai-completions` 工具流适配，`thinkingLevel` 关闭。非秘密配置如下：
+
+```powershell
+$env:PI_PROVIDER = 'deepseek'
+$env:PI_MODEL = 'deepseek-flash'
+# DEEPSEEK_API_KEY 已由 secret store 注入当前 Gateway 进程。
+$env:PI_INPUT_USD_PER_MTOK = '0.30'
+$env:PI_OUTPUT_USD_PER_MTOK = '1.20'
+$env:PI_CACHE_READ_USD_PER_MTOK = '0.006'
+$env:PI_CACHE_WRITE_USD_PER_MTOK = '0'
+$env:PI_CACHE_WRITE_1H_USD_PER_MTOK = '0'
+$env:PI_PRICING_SOURCE = 'https://api-docs.deepseek.com/quick_start/pricing/'
+```
+
+以上价格为 **2026-10-07** 核对的 `deepseek-flash` 峰值时段每百万 token 美元费率；官方非峰值费率为其一半。本批使用峰值费率作为保守预算及记录依据，不能将计算结果宣称为实际扣款；调用前须再次核对 [DeepSeek 官方价格](https://api-docs.deepseek.com/quick_start/pricing/) 与账号、endpoint、模型是否一致。缓存未命中按普通输入计费，无独立缓存写入收费，故两个写入费率设为 `0`。
+
+**Anthropic 配置仍可使用**：从安全环境注入 `ANTHROPIC_API_KEY` 或 `ANTHROPIC_OAUTH_TOKEN`，并设置该模型对应的全部输入、输出和缓存费率，不能沿用上述 DeepSeek 数值。
+
+```powershell
+$env:PI_PROVIDER = 'anthropic'
 $env:PI_MODEL = 'claude-haiku-4-5-20251001'
+$env:PI_PRICING_SOURCE = 'https://platform.claude.com/docs/en/about-claude/pricing'
+# 注入已核对的 PI_INPUT_USD_PER_MTOK、PI_OUTPUT_USD_PER_MTOK、
+# PI_CACHE_READ_USD_PER_MTOK、PI_CACHE_WRITE_USD_PER_MTOK、PI_CACHE_WRITE_1H_USD_PER_MTOK。
+```
+
+模型 ID 示例不保证账号具有访问权限。选定 provider 后，在同一个受控环境执行无费用检查：
+
+```powershell
+npm run preflight
+npm run check
+npm run provider:check
+npm run budget:check
+npm run storyboard:check
+npm run smoke
+# preflight 的 readyForSb12LiveRun 为 true，且 Java 链路独立检查通过后再启动。
 npm start
 ```
 
-示例模型 ID 来自本地 catalog，不保证账号具有访问权限，可通过 PI_MODEL 修改。默认只读本进程环境变量，不访问 coding-agent 的用户 OAuth 配置。真实 provider 调用会产生费用，本示例的自动验证不调用真实模型。
+`preflight` 只检查配置，不证明密钥有效、账户有余额或 Java 可达；上述确定性检查不调用真实 provider。真实调用前先冻结配置、样本及证据目录。
+
+SB-12 的受控执行限于 **单 Gateway 进程、串行、`generate_storyboard`**，最多 8 个业务 run、USD 1.00 的累计预留控制；SDK 自动重试为 0，失败请求保守消耗预留费用。业务 run 不等于 provider 请求，每个真实预检、失败尝试与重试都要纳入账本和本批限额。每个 run 达到终态后立即导出 `GET /agent/runs/{runId}/ledger` 和 Java 保存的实际产物；运行中的 ledger 不能作为完整证据。账本、计数和预算均在内存，run 约 30 分钟后清理；进程退出或崩溃必须停止批次并核账，不得通过重启清零后继续。本批不能用其他 taskType 做付费诊断，也不能把 SB-12 的 8 次额度当成后续用户试用额度。
 
 这份源码的 `pi-ai` 根入口已改用 `createModels()` + provider factory。`packages/agent/README.md` 的旧 `getModel` 示例与当前根入口不一致；旧 API 在 `/compat`。本示例使用新入口。
 

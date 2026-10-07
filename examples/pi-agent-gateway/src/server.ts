@@ -2,6 +2,8 @@ import { randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createRuntime } from "./runtime.ts";
 import { parseTaskType, type TaskType } from "./profiles.ts";
+import { BudgetController, liveBudgetConfig, type ProviderRequestLedgerEntry } from "./budget.ts";
+import { selectLiveModel } from "./live-provider.ts";
 
 type Runtime = ReturnType<typeof createRuntime>;
 type Status = "running" | "completed" | "failed" | "cancelled";
@@ -14,6 +16,7 @@ type Run = {
   id: string; sessionId: string; userId: string; requestId: string; message: string;
   status: Status; events: string[]; bytes: number; listeners: Set<ServerResponse>;
   createdAt: number; endedAt?: number; stopReason?: string;
+  providerLedger?: ProviderRequestLedgerEntry[];
 };
 class HttpError extends Error {
   status: number;
@@ -24,6 +27,8 @@ const token = process.env.AGENT_GATEWAY_TOKEN;
 if (!token || token.length < 16) throw new Error("Set AGENT_GATEWAY_TOKEN (at least 16 characters)");
 if (!["mock", "live"].includes(process.env.AGENT_MODE ?? "mock")) throw new Error("Invalid AGENT_MODE");
 if (!["mock", "http"].includes(process.env.JAVA_MODE ?? "mock")) throw new Error("Invalid JAVA_MODE");
+const budget = process.env.AGENT_MODE === "live" ? new BudgetController(liveBudgetConfig(process.env)) : undefined;
+if (budget) selectLiveModel(process.env);
 const expectedAuth = Buffer.from(`Bearer ${token}`);
 const sessions = new Map<string, Session>();
 const runs = new Map<string, Run>();
@@ -111,6 +116,7 @@ async function executeRun(session: Session, run: Run): Promise<void> {
   let failure: string | undefined;
   try {
     if (!run.stopReason) {
+      if (session.taskType === "generate_storyboard") budget?.beginBusinessRun(run.id);
       session.runtime.prepareRun();
       emit(run, "run.started", {});
       await session.runtime.agent.prompt(run.message);
@@ -134,6 +140,7 @@ async function executeRun(session: Session, run: Run): Promise<void> {
     clearTimeout(timer);
     run.status = run.stopReason === "user_cancelled" ? "cancelled" : run.stopReason || failure ? "failed" : "completed";
     run.endedAt = Date.now();
+    run.providerLedger = session.runtime.getProviderLedger();
     // Cancelled tool batches may have incomplete call/result pairs. The MVP
     // requires a fresh session; production recovery must repair the transcript.
     if (run.status !== "completed") session.needsNewSession = true;
@@ -218,7 +225,7 @@ const server = createServer((req, res) => {
         const active = sessions.get(id)?.activeRun;
         const run = active ? runs.get(active) : undefined;
         if (run) emit(run, type, data);
-      });
+      }, taskType === "generate_storyboard" ? budget : undefined);
       sessions.set(id, { ...scope, id, runtime, touchedAt: Date.now() });
       json(res, 201, { sessionId: id }); return;
     }
@@ -247,11 +254,16 @@ const server = createServer((req, res) => {
       json(res, 202, { runId: run.id });
       setImmediate(() => { void executeRun(session, run); }); return;
     }
-    const match = /^\/agent\/runs\/([\w-]+)(?:\/(events|cancel))?$/.exec(url.pathname);
+    const match = /^\/agent\/runs\/([\w-]+)(?:\/(events|cancel|ledger))?$/.exec(url.pathname);
     if (match) {
       const run = getRun(match[1], userId);
       if (req.method === "GET" && match[2] === "events") { streamEvents(req, res, run, url); return; }
-      if (req.method === "GET" && !match[2]) { json(res, 200, { runId: run.id, status: run.status }); return; }
+      if (req.method === "GET" && !match[2]) {
+        json(res, 200, { runId: run.id, status: run.status, budget: budget?.totals() }); return;
+      }
+      if (req.method === "GET" && match[2] === "ledger") {
+        json(res, 200, { runId: run.id, status: run.status, providerRequests: run.providerLedger ?? [], budget: budget?.totals() }); return;
+      }
       if (req.method === "POST" && match[2] === "cancel") {
         if (run.status === "running") { run.stopReason ??= "user_cancelled"; sessions.get(run.sessionId)?.runtime.agent.abort(); }
         json(res, 202, { runId: run.id, status: run.status }); return;

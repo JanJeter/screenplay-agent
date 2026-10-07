@@ -6,7 +6,10 @@
     "start": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json src/server.ts",
     "check": "node ../../pi-agent/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
     "smoke": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/smoke.ts",
-    "storyboard:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/storyboard-contract.ts"
+    "storyboard:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/storyboard-contract.ts",
+    "preflight": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/preflight.ts",
+    "budget:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/budget-contract.ts",
+    "provider:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/provider-contract.ts"
   },
   "engines": { "node": ">=22.19.0" }
 }

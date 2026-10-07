@@ -1,33 +1,38 @@
 import { Agent } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
-import { anthropicProvider } from "@earendil-works/pi-ai/providers/anthropic";
 import { fauxAssistantMessage, fauxProvider, fauxToolCall } from "@earendil-works/pi-ai/providers/faux";
 import { createScreenplayTools, type SessionScope } from "./tools.ts";
 import { createStoryboardTools } from "./storyboard-tools.ts";
 import {
   hasEquivalentSavedStoryboardAcknowledgement,
+  parseSavedStoryboardAcknowledgement,
   type EditableShot,
   type StoryboardContext,
   type StoryboardResult,
 } from "./storyboard-schema.ts";
 import { hasValidProfileResult, isStoryboardTaskType, profileFor } from "./profiles.ts";
+import { BudgetController, type ProviderRequestLedgerEntry } from "./budget.ts";
+import { selectLiveModel } from "./live-provider.ts";
 
 export function createRuntime(
   scope: SessionScope,
   emit: (type: string, data: Record<string, unknown>) => void,
-): { agent: Agent; prepareRun: () => void; hasValidStructuredResult: () => boolean } {
+  budget?: BudgetController,
+): { agent: Agent; prepareRun: () => void; hasValidStructuredResult: () => boolean; getProviderLedger: () => ProviderRequestLedgerEntry[] } {
   const live = process.env.AGENT_MODE === "live";
   const profile = profileFor(scope.taskType);
   // A separate faux queue and model registry per session prevents cross-session leakage.
   const faux = live ? undefined : fauxProvider({ tokensPerSecond: 160, tokenSize: { min: 1, max: 2 } });
   const models = createModels();
-  models.setProvider(faux ? faux.provider : anthropicProvider());
-  const model = faux
-    ? faux.getModel()
-    : models.getModel("anthropic", process.env.PI_MODEL ?? "claude-haiku-4-5-20251001");
-  if (!model) throw new Error("PI_MODEL is absent from the local Anthropic model catalog");
+  const selected = faux ? { provider: faux.provider, model: faux.getModel() } : selectLiveModel(process.env);
+  models.setProvider(selected.provider);
+  const model = selected.model;
 
   let toolCalls = 0;
+  let activeRunId: string | undefined;
+  let requestSequence = 0;
+  let requestLedger: ProviderRequestLedgerEntry[] = [];
+  const pendingRequests: ProviderRequestLedgerEntry[] = [];
   const agent = new Agent({
     sessionId: scope.sessionId,
     toolExecution: "sequential",
@@ -52,9 +57,37 @@ export function createRuntime(
       ].join("\n"),
       tools: isStoryboardTaskType(profile.id) ? createStoryboardTools(scope) : createScreenplayTools(scope),
     },
-    streamFn: (requestedModel, context, options) => models.streamSimple(requestedModel, context, {
-      ...options, maxTokens: profile.maxOutputTokens ?? 2048,
-    }),
+    streamFn: (requestedModel, context, options) => {
+      let entry: ProviderRequestLedgerEntry | undefined;
+      if (budget) {
+        if (!activeRunId) throw new Error("SB-12 budget ledger requires an active Gateway run");
+        entry = budget.reserve({
+          sequence: ++requestSequence, provider: requestedModel.provider, model: requestedModel.id,
+          contextBytes: Buffer.byteLength(JSON.stringify(context), "utf8"), outputTokenLimit: profile.maxOutputTokens ?? 2048,
+        });
+        requestLedger.push(entry);
+        pendingRequests.push(entry);
+        emit("provider.request_started", {
+          sequence: entry.sequence, provider: entry.provider, model: entry.model, reservedCostUsd: entry.reservedCostUsd,
+          inputTokenReserve: entry.inputTokenReserve, outputTokenLimit: entry.outputTokenLimit, retryPolicy: entry.retryPolicy,
+        });
+      }
+      try {
+        return models.streamSimple(requestedModel, context, {
+          ...options, maxTokens: profile.maxOutputTokens ?? 2048, maxRetries: 0,
+          onResponse: async (response, responseModel) => {
+            if (entry) budget?.recordResponse(entry, response.headers);
+            await options?.onResponse?.(response, responseModel);
+          },
+        });
+      } catch (error) {
+        if (entry) {
+          budget?.fail(entry, error instanceof Error ? error.message : "provider stream setup failed");
+          emit("provider.request_failed", { sequence: entry.sequence, chargedCostUsd: entry.chargedCostUsd, reason: entry.failureReason });
+        }
+        throw error;
+      }
+    },
     async beforeToolCall() {
       toolCalls += 1;
       if (toolCalls > profile.maxToolCalls) {
@@ -81,6 +114,27 @@ export function createRuntime(
     } else if (event.type === "message_end" && event.message.role === "assistant") {
       const usage = event.message.usage;
       emit("usage", { input: usage.input, output: usage.output, totalTokens: usage.totalTokens });
+      const entry = pendingRequests.shift();
+      if (entry) {
+        if (event.message.stopReason === "error" || event.message.stopReason === "aborted") {
+          budget?.fail(entry, event.message.errorMessage ?? event.message.stopReason);
+          emit("provider.request_failed", {
+            sequence: entry.sequence, chargedCostUsd: entry.chargedCostUsd, reason: entry.failureReason,
+          });
+        } else {
+          budget?.complete(entry, usage);
+          if (entry.status === "failed") {
+            emit("provider.request_failed", {
+              sequence: entry.sequence, chargedCostUsd: entry.chargedCostUsd, reason: entry.failureReason,
+            });
+          } else {
+            emit("provider.request_completed", {
+              sequence: entry.sequence, requestId: entry.requestId, actualUsage: entry.actualUsage,
+              actualCostUsd: entry.actualCostUsd, chargedCostUsd: entry.chargedCostUsd, retryPolicy: entry.retryPolicy,
+            });
+          }
+        }
+      }
     }
   });
 
@@ -88,6 +142,10 @@ export function createRuntime(
     agent,
     prepareRun() {
       toolCalls = 0;
+      activeRunId = scope.applicationRunId;
+      requestSequence = 0;
+      requestLedger = [];
+      pendingRequests.length = 0;
       if (!faux) return;
       // Deterministic integration demo, NOT model-generated analysis. Reset on
       // every successful follow-up run. server.ts requires a new session after
@@ -120,6 +178,7 @@ export function createRuntime(
         return hasValidProfileResult(profile.id, value);
       } catch { return false; }
     },
+    getProviderLedger() { return requestLedger.map(entry => ({ ...entry, retryPolicy: { ...entry.retryPolicy }, actualUsage: entry.actualUsage ? { ...entry.actualUsage } : undefined })); },
   };
 }
 
@@ -180,7 +239,7 @@ function hasSavedStoryboardAcknowledgement(messages: readonly unknown[]): boolea
       .filter(part => part.type === "text" && typeof part.text === "string").map(part => part.text).join("")
     : "";
   try {
-    const finalValue = JSON.parse(finalText) as unknown;
+    const finalValue = parseSavedStoryboardAcknowledgement(finalText);
     const savedValue = latestSuccessfulToolResult({ messages }, "save_storyboard_result");
     return hasEquivalentSavedStoryboardAcknowledgement(finalValue, savedValue);
   } catch { return false; }
