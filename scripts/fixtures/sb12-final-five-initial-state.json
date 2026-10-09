@@ -1,0 +1,11 @@
+{
+  "batchId": "SB12-FIXED-EIGHT-20261007",
+  "state": "offline-fixture-initial",
+  "finalFive": {
+    "01-8-B": { "submissionStatus": "not-submitted", "executionStatus": "not-started" },
+    "02-A": { "submissionStatus": "not-submitted", "executionStatus": "not-started" },
+    "02-B": { "submissionStatus": "not-submitted", "executionStatus": "not-started" },
+    "03-A": { "submissionStatus": "not-submitted", "executionStatus": "not-started" },
+    "03-B": { "submissionStatus": "not-submitted", "executionStatus": "not-started" }
+  }
+}

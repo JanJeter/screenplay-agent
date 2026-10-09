@@ -1,0 +1,62 @@
+{
+  "status": "STOPPED_AFTER_FAILURE",
+  "updatedAt": "2026-10-07T12:46:00.3012720Z",
+  "runs": [
+    {
+      "label": "01-A",
+      "status": "completed",
+      "javaRunId": "05d93636-7cf1-43db-beed-3dd2047291af",
+      "gatewayRunId": "a1c93b20-3717-4612-9e64-a288f3728ee8",
+      "storyboardId": "d9a4954e-a67b-4532-b998-720a11381163",
+      "shots": 6,
+      "providerRequests": 3,
+      "runChargedUsd": 0.002657148,
+      "sourceQuotesLocated": true,
+      "allImagePromptsPresent": true,
+      "allVideoPromptsPresent": true
+    },
+    {
+      "label": "01-B",
+      "status": "completed",
+      "javaRunId": "4855bf05-843f-4b07-99b7-99de8105e3ac",
+      "gatewayRunId": "1eed782e-f149-41ec-bd9e-dc83802919fe",
+      "storyboardId": "7abd1704-7b07-439d-9cc8-502af7bed8bb",
+      "shots": 6,
+      "providerRequests": 3,
+      "runChargedUsd": 0.002221284,
+      "sourceQuotesLocated": true,
+      "allImagePromptsPresent": true,
+      "allVideoPromptsPresent": true
+    },
+    {
+      "label": "01-8-A",
+      "status": "failed",
+      "javaRunId": "ef36082d-5384-4a03-84b8-9df16d692398",
+      "gatewayRunId": "669e7699-c2f4-4f07-9c30-35817fc2413c",
+      "storyboardId": "a55499c7-a9aa-452e-9ad9-12266c65e219",
+      "shots": 8,
+      "providerRequests": 3,
+      "runChargedUsd": 0.002603928,
+      "sourceQuotesLocated": true,
+      "allImagePromptsPresent": true,
+      "allVideoPromptsPresent": true
+    }
+  ],
+  "unstarted": [
+    "01-8-B",
+    "02-A",
+    "02-B",
+    "03-A",
+    "03-B"
+  ],
+  "businessRuns": 3,
+  "providerRequests": 9,
+  "retries": 0,
+  "chargedUsd": 0.007482360,
+  "remainingUsd": 0.99251764,
+  "reservedUsd": 0,
+  "failedRunsStillCharged": true,
+  "humanEvaluation": "Pending",
+  "supplierBillingReconciliation": "Pending",
+  "continuation": "No additional paid calls until failure fix and continuation plan are reviewed; do not restart from 01-A totals."
+}

@@ -3,6 +3,7 @@ package com.urke.saasbackendstarter.service.impl;
 import com.urke.saasbackendstarter.domain.User;
 import com.urke.saasbackendstarter.domain.Organization;
 import com.urke.saasbackendstarter.domain.Role;
+import com.urke.saasbackendstarter.admin.AdminAccessGuard;
 import com.urke.saasbackendstarter.dto.user.UserCreateRequest;
 import com.urke.saasbackendstarter.dto.user.UserUpdateRequest;
 import com.urke.saasbackendstarter.events.UserEvent;
@@ -26,6 +27,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -34,36 +36,15 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSource messageSource;
+    private final com.urke.saasbackendstarter.service.AccountLifecycleService accounts;
+    private final com.urke.saasbackendstarter.repository.RefreshTokenRepository refreshTokens;
+    private final AdminAccessGuard adminAccess;
+    private final com.urke.saasbackendstarter.audit.AuditLogService audit;
 
     @Override
     @Transactional
     public User register(UserCreateRequest request) {
-        if (userRepository.existsByEmailAndDeletedFalse(request.getEmail())) {
-            throw new UserAlreadyExistsException(
-                messageSource.getMessage("user.exists", null, LocaleContextHolder.getLocale())
-            );
-        }
-
-        Organization organization = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> new RuntimeException("Organization not found"));
-
-        Role userRole = roleRepository.findByNameAndOrganizationId("USER", organization.getId())
-                .orElseThrow(() -> new RuntimeException(
-                    messageSource.getMessage("role.notfound", null, LocaleContextHolder.getLocale())
-                ));
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .fullName(request.getFullName())
-                .roles(Set.of(userRole))
-                .organization(organization)
-                .deleted(false)
-                .build();
-
-        User saved = userRepository.save(user);
-        eventPublisher.publishEvent(new UserEvent(this, UserEvent.Type.REGISTERED, saved));
-        return saved;
+        return accounts.register(request);
     }
 
     @Override
@@ -78,42 +59,51 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findById(Long id) {
-        return userRepository.findByIdAndDeletedFalse(id);
+        User actor = adminAccess.actor();
+        if (!Objects.equals(actor.getId(), id) && !adminAccess.isAdmin(actor) && !adminAccess.hasPermission(actor, "USER_VIEW_ALL")) AdminAccessGuard.forbidden();
+        return userRepository.findByIdAndOrganizationIdAndDeletedFalse(id, actor.getOrganization().getId());
     }
 
     @Override
     public List<User> findAll() {
-        return userRepository.findAllByDeletedFalse();
+        User actor = viewActor();
+        return userRepository.findAllByOrganizationAndDeletedFalse(actor.getOrganization());
     }
 
     @Override
     public List<User> findAllByOrganization(Organization organization) {
-        return userRepository.findAllByOrganizationAndDeletedFalse(organization);
+        User actor = viewActor();
+        adminAccess.sameOrganization(actor, organization.getId());
+        return userRepository.findAllByOrganizationAndDeletedFalse(actor.getOrganization());
     }
 
     @Override
     public Page<User> findAll(Pageable pageable) {
-        return userRepository.findAllByDeletedFalse(pageable);
+        return findAllByEmailFilter("", pageable);
     }
 
     @Override
     public Page<User> findAllByEmailFilter(String email, Pageable pageable) {
-        return userRepository.findByEmailContainingIgnoreCaseAndDeletedFalse(email, pageable);
+        User actor = viewActor();
+        if (pageable.getPageSize() > 100) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "每页最多100条记录");
+        return userRepository.searchInOrganization(actor.getOrganization().getId(), email == null ? "" : email.trim(), pageable);
     }
 
     @Override
     @Transactional
     public User updateUser(Long id, UserUpdateRequest request) {
-        User user = userRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new UserNotFoundException(
-                    messageSource.getMessage("user.notfound", null, LocaleContextHolder.getLocale())
-                ));
+        User actor = adminAccess.lockActor();
+        if (!adminAccess.isAdmin(actor) && (!Objects.equals(actor.getId(), id) || !adminAccess.hasPermission(actor, "USER_UPDATE_SELF"))) AdminAccessGuard.forbidden();
+        User user = adminAccess.lockedTarget(actor, id);
 
         user.setFullName(request.getFullName());
         if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            user.setPassword(passwordEncoder.encode(com.urke.saasbackendstarter.security.AccountInputs.password(request.getNewPassword())));
+            user.setTokenVersion(user.getTokenVersion() + 1);
+            refreshTokens.deleteByUser(user);
         }
         User updated = userRepository.save(user);
+        audit.log("USER_PROFILE_UPDATED", "User", user.getId(), "更新工作区成员资料", actor.getEmail());
         eventPublisher.publishEvent(new UserEvent(this, UserEvent.Type.UPDATED, updated));
         return updated;
     }
@@ -121,12 +111,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        User user = userRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new UserNotFoundException(
-                    messageSource.getMessage("user.notfound", null, LocaleContextHolder.getLocale())
-                ));
+        User actor = adminAccess.lockActor();
+        if (!adminAccess.isAdmin(actor) && (!Objects.equals(actor.getId(), id) || !adminAccess.hasPermission(actor, "USER_DELETE"))) AdminAccessGuard.forbidden();
+        User user = adminAccess.lockedTarget(actor, id);
+        adminAccess.protectAdministrator(actor, user, false, user.getRoles());
         user.setDeleted(true);
+        user.setTokenVersion(user.getTokenVersion() + 1);
         userRepository.save(user);
+        audit.log("USER_DELETED", "User", user.getId(), "删除工作区成员账号", actor.getEmail());
         eventPublisher.publishEvent(new UserEvent(this, UserEvent.Type.DELETED, user));
+    }
+
+    private User viewActor() {
+        User actor = adminAccess.actor();
+        if (!adminAccess.isAdmin(actor) && !adminAccess.hasPermission(actor, "USER_VIEW_ALL")) AdminAccessGuard.forbidden();
+        return actor;
     }
 }

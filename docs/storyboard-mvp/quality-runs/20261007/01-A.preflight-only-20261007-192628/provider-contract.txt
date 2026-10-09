@@ -1,0 +1,5 @@
+
+> provider:check
+> node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/provider-contract.ts
+
+PASS: offline DeepSeek SDK tool loop/save receipt, non-thinking payload, cache usage, request ledger, zero retries, missing-usage reservation; no external HTTP requests

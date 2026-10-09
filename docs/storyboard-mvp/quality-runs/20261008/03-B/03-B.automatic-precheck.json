@@ -1,0 +1,20 @@
+{
+  "label": "自动预检查",
+  "javaRunId": "9b0f71b0-07bf-4bfb-850d-9f9de08cfd80",
+  "gatewayRunId": "ea19a78d-6f3c-4d92-9dbf-bc114de649db",
+  "traceId": "21736005-bd7d-48be-882d-7a3fc5369d50",
+  "status": "failed",
+  "startedAt": "2026-10-08T10:46:38.6440781Z",
+  "endedAt": "2026-10-08T10:46:52.9551608Z",
+  "durationMs": 14311,
+  "expectedShotCount": 4,
+  "actualShotCount": null,
+  "allSourceQuotesInJavaFrozenScene": false,
+  "allImagePromptsPresent": false,
+  "allVideoPromptsPresent": false,
+  "criticalFactAutomatedChecks": {
+    "completed": false,
+    "reason": "Java storyboard artifact unavailable"
+  },
+  "humanEvaluation": "待人工评价：直接用 / 小改可用 / 需要重做。"
+}

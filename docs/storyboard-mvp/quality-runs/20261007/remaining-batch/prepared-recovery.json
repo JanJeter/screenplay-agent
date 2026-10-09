@@ -1,0 +1,58 @@
+{
+  "inspectedAt": "2026-10-07T12:35:25.3298248Z",
+  "reason": "Fresh startup was repeated while the batch evidence and prepared services already existed. Original launcher exited before any project or generation was created; its exact exit cause was not recorded.",
+  "recovery": "Continue the already authorized seven samples on the original healthy Java/Gateway/PostgreSQL; no process restart or budget reseeding.",
+  "retainedJavaPid": 30848,
+  "retainedGatewayPid": 4492,
+  "retainedDatabase": "screenplay-sb12-remaining-postgres",
+  "preRecoveryDatabaseCounts": {
+    "runs": 0,
+    "projects": 0,
+    "contexts": 0
+  },
+  "newRunEvidenceDirectories": 0,
+  "initialBusinessRuns": 1,
+  "initialChargedUsd": 0.002657148,
+  "runtimeAssociationAndBudgetSeed": "Validated against nonsecret configuration of the original dedicated processes; service credential used only in memory and never printed or persisted.",
+  "checks": {
+    "approvalAndSourceHashes": "PASS",
+    "copiedEvidenceHashes": "PASS",
+    "resumeCheckOnly": "PASS",
+    "wrongPortRejection": "PASS",
+    "concurrentResumeRejection": "PASS",
+    "scriptSyntax": "PASS",
+    "diffCheck": "PASS"
+  },
+  "providerRequestsDuringInspection": 0,
+  "launcherSha256": "5194BB965489C2465E97F9D357B753F200A8FEFCB5DC95395BC4F81BA42D686D",
+  "originalFiles": [
+    {
+      "path": "carryover.json",
+      "sha256": "A401AF240B9327F2A18C469D3FD7BBDFE4229DBD358F7D297FBEC80530EA4B97"
+    },
+    {
+      "path": "01-A.provider-ledger-copy.json",
+      "sha256": "7A6301ADFABE4D43CE5D6F4618878C90DCB9E33B5259D6E356112759D09804D9"
+    },
+    {
+      "path": "01-A.java-run-copy.json",
+      "sha256": "FAE17B301B1BAA8215CC4CFD5D73A6BDB82CF80AD430FEEED64DC1DCB8B9C6FF"
+    },
+    {
+      "path": "preflight-live.json",
+      "sha256": "F548FEFA0E84E70489E034CEA8500528B1E3CB09CA88D4785E3A3D8FC022A787"
+    },
+    {
+      "path": "gateway-typecheck.txt",
+      "sha256": "461A843AEBCD7D082A12EA3798EF6020670326684F178AD1536C4EF9E7E40D02"
+    },
+    {
+      "path": "provider-contract.txt",
+      "sha256": "756817F6A45E341AD6E4429AE3E8C904B7AB354DC1C1DFE9F41210D275A1EFBA"
+    },
+    {
+      "path": "budget-contract.txt",
+      "sha256": "47A6EE260EA8AA26638C198212B3E240188C2BAAD6419DA3AFFE93933DD33723"
+    }
+  ]
+}

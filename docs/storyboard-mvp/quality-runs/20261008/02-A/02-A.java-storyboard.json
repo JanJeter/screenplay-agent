@@ -1,0 +1,99 @@
+{
+  "id": "e8065c17-87ff-44c4-a9d9-9d10f00bd1fe",
+  "projectId": "2",
+  "createdBy": "1",
+  "sourceRunId": "cc34803b-e998-4e4a-8bd6-c7c8e3f8873d",
+  "sourceSnapshot": {
+    "scriptId": "2",
+    "scriptRevision": 1,
+    "sourceSceneId": "2",
+    "sceneNo": 1,
+    "heading": "INT. 医院安全楼梯 - 夜",
+    "sceneText": "INT. 医院安全楼梯 - 夜\n\n楼道突然停电。陈默按亮手机手电，另一只手夹着蓝色文件夹。他刚迈下一级台阶，文件夹滑落，纸页散到下一层平台。\n\n身后的苏岚抓住扶手，没有移动。\n\n苏岚：别下去，门锁上了。\n\n陈默蹲在台阶上，用手电照向平台。他没有碰那扇门。\n\n苏岚把自己的钥匙递给陈默。陈默接过钥匙，仍蹲在原地，先把散页压回蓝色文件夹。\n\n远处应急灯亮起一盏。两人看见门锁还扣着。",
+    "sceneHash": "dc069ca728d38ab135c2a66c56055e927569efb8e4725cf40ad6699da5dd1686"
+  },
+  "revision": 1,
+  "createdAt": "2026-10-08T10:46:14.206348Z",
+  "updatedAt": "2026-10-08T10:46:14.206348Z",
+  "shots": [
+    {
+      "id": "5269ae59-655c-4a2c-888b-ee931f7ab267",
+      "orderIndex": 0,
+      "shotSize": "ESTABLISHING",
+      "cameraMovement": "STATIC",
+      "visualDescription": "医院安全楼梯间全景，深夜。灯光骤然熄灭，整段楼梯陷入黑暗，只有扶手轮廓隐约可见。陈默与苏岚的身影停在楼梯上，黑暗中保持不动。",
+      "dialogue": "",
+      "sound": "灯管熄灭的电流声骤停，随后一片死寂，远处传来空旷的楼道回响",
+      "durationSeconds": 5,
+      "imagePrompt": "INT. hospital emergency staircase at night, wide establishing shot, sudden blackout, all lights off, deep darkness, faint silhouette of handrails, two figures standing still on the stairs, cold blue-grey tones, dim emergency ambience, cinematic lighting, 35mm film look, high detail, vertical composition",
+      "videoPrompt": "Wide establishing shot of an interior hospital emergency staircase at night. The lighting cuts out suddenly in a single abrupt blackout; the space plunges into darkness with only faint handrail outlines and two unmoving figures. Camera static. Slow subtle ambient dust in the dark, no character movement. Cold blue-grey grade, high contrast, cinematic film grain.",
+      "sourceQuote": "楼道突然停电。"
+    },
+    {
+      "id": "a6df4497-2895-43f9-836c-1f1a12db3a01",
+      "orderIndex": 1,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "STATIC",
+      "visualDescription": "陈默按亮手机手电，一束白色光锥切开黑暗。他另一只手夹着蓝色文件夹。苏岚在他身后抓住扶手，身体没有任何移动。",
+      "dialogue": "",
+      "sound": "手机手电开启的轻响，衣物摩擦的细微声，安静的楼梯间底噪",
+      "durationSeconds": 5,
+      "imagePrompt": "MEDIUM shot, a man lights up his phone flashlight, narrow cone of white light cutting through the darkness, his other arm clamps a blue folder against his side, behind him a woman grips the handrail and stands completely still, hospital emergency staircase at night, faint faces lit by cold phone light, deep shadows, realistic, cinematic, 50mm lens",
+      "videoPrompt": "Medium shot in a dark hospital staircase. A man activates the phone flashlight; a sharp white beam sweeps the darkness. His other arm holds a blue folder. Behind him a woman grips the handrail and does not move. Camera static, light bounce shifting subtly across the walls. Realistic night imagery, cinematic contrast.",
+      "sourceQuote": "陈默按亮手机手电，另一只手夹着蓝色文件夹。"
+    },
+    {
+      "id": "abbdf5fc-568b-4d1b-be65-978ab82714c1",
+      "orderIndex": 2,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "TILT",
+      "visualDescription": "特写陈默夹着的蓝色文件夹从臂弯滑脱，镜头随之下移。文件夹翻开，纸页纷纷散落到下一层平台，在手机手电光中翻卷。",
+      "dialogue": "",
+      "sound": "文件夹脱手的摩擦声，纸张散落飘落的哗啦声，纸张触地的轻响",
+      "durationSeconds": 4,
+      "imagePrompt": "CLOSE_UP, a blue folder slips from under a man's arm, pages bursting out and scattering down, camera tilting down with the falling papers, sheets floating through the narrow beam of a phone flashlight, dark hospital staircase, suspended paper in mid-air, dramatic light shaft, high speed detail, cinematic, shallow depth of field",
+      "videoPrompt": "Close-up tilted down as a blue folder slips from under the man's arm. Pages burst out and scatter, drifting down through the narrow cone of phone flashlight toward the landing below. Camera tilts down following the papers. Slow-motion feel, paper fluttering in the beam, dark surroundings. Realistic lighting, cinematic depth.",
+      "sourceQuote": "他刚迈下一级台阶，文件夹滑落，纸页散到下一层平台。"
+    },
+    {
+      "id": "34e1689f-e0cb-4807-9586-bbc97661780c",
+      "orderIndex": 3,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "STATIC",
+      "visualDescription": "苏岚站在陈默身后，双手紧抓扶手，双脚没有移动。她望向下方平台的方向，低声开口警告。",
+      "dialogue": "苏岚：别下去，门锁上了。",
+      "sound": "安静的楼梯间，苏岚压低的声音，扶手轻微受力的吱声",
+      "durationSeconds": 4,
+      "imagePrompt": "MEDIUM shot, a woman stands behind a man on dark stairs, both hands gripping the handrail tightly, feet planted, not moving, she looks down toward the landing below, faint phone flashlight spill lighting half her face, hospital stairwell at night, tense atmosphere, realistic, cinematic, 50mm lens",
+      "videoPrompt": "Medium shot of a woman behind the man on the dark stairs. She grips the handrail with both hands, feet planted and unmoving, looking down toward the landing. Faint spill of phone flashlight on half her face. Camera static, minimal motion, subtle breathing. Tense quiet night atmosphere, cinematic realism.",
+      "sourceQuote": "身后的苏岚抓住扶手，没有移动。"
+    },
+    {
+      "id": "669a3272-6ca7-4953-8e08-15dccc6dd209",
+      "orderIndex": 4,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "DOLLY_IN",
+      "visualDescription": "陈默蹲在台阶上，手机手电的光照向下方平台。他保持蹲姿，视线落在下方那扇门上，却没有伸手触碰。",
+      "dialogue": "",
+      "sound": "低声的呼吸，手电光柱下细微的灰尘声，远处空旷回响",
+      "durationSeconds": 5,
+      "imagePrompt": "CLOSE_UP, a man crouches on the steps and aims his phone flashlight down toward the landing below, his gaze fixed on a closed door, hands kept away and not touching it, scattered white pages on the landing floor, dark hospital staircase, hard light beam, strong shadows, realistic, cinematic, shallow depth of field",
+      "videoPrompt": "Close-up dolly in on the man crouching on the steps. He directs the phone flashlight down at the landing; light reveals the door and the scattered pages, but he keeps his hands away and does not touch the door. Camera slowly dollies in. Dust motes in the beam, heavy shadows. Cinematic realism.",
+      "sourceQuote": "陈默蹲在台阶上，用手电照向平台。他没有碰那扇门。"
+    },
+    {
+      "id": "9ab2608c-7294-4564-bed4-14e8dd9ee1f2",
+      "orderIndex": 5,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "STATIC",
+      "visualDescription": "苏岚把自己的钥匙递向陈默。陈默接过钥匙，仍蹲在原地，先把散页压回蓝色文件夹。远处一盏应急灯亮起，照亮还紧扣着的门锁轮廓。",
+      "dialogue": "",
+      "sound": "钥匙递出的金属轻响，纸张被压回文件夹的窸窣声，应急灯亮起的嗡鸣",
+      "durationSeconds": 6,
+      "imagePrompt": "CLOSE_UP, a woman's hand passing a key to a crouching man, he takes the key but stays crouched, pressing the scattered pages back into the blue folder first, a distant emergency light switching on, revealing a door lock still latched, dark hospital staircase, mixed cold light source, realistic detail, cinematic, shallow depth of field",
+      "videoPrompt": "Close-up: the woman hands her key down to the crouching man. He takes the key in hand but remains crouched, pressing the scattered pages back into the blue folder first. In the distance a single emergency light comes on, revealing the door lock still latched. Camera static. Key, paper and lock stay visually continuous. Cinematic realism, mixed cold lighting.",
+      "sourceQuote": "苏岚把自己的钥匙递给陈默。陈默接过钥匙，仍蹲在原地，先把散页压回蓝色文件夹。"
+    }
+  ],
+  "proposalSummaries": []
+}

@@ -1,0 +1,30 @@
+{
+  "label": "02-B",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "targetShotCount": 6,
+  "instructions": "保持停电、手电、蓝色文件夹、钥匙与门锁状态连续，不增加原文外动作。",
+  "implementationSha256": {
+    "src\\runtime.ts": "C18276CCEF87B1B651852BCE0BF1C73E213F5BBE5CB3C4668169005D0E16AD7E",
+    "src\\profiles.ts": "BA063F85FB517AA990770AD3E999B641E138BB245EC62F23E55502DA1AE57DB6",
+    "src\\storyboard-tools.ts": "8BDAB9EF8CF6FB97DAACD5D16600125BCC9595C8E0BC1C7D637FCDC6674ECD81",
+    "src\\storyboard-schema.ts": "C18C57BCF78544EE411FC9A6A6ED699043AF5BB98609C2F1711E3E530F68C9A7",
+    "src\\budget.ts": "62CF84C359544EBC392E2B1ECDAC8146089CAE939C19EED48F3E5E081BD29252"
+  },
+  "inputTokenReserve": 50000,
+  "providerInputOverheadTokens": 2000,
+  "maxOutputTokens": 8192,
+  "maxRetries": 0,
+  "carryover": {
+    "sourceRunId": "ef36082d-5384-4a03-84b8-9df16d692398",
+    "sourceTraceId": "1a00fd13-e61d-4ab9-bb25-854245ce9a37",
+    "initialBusinessRuns": 3,
+    "initialChargedUsd": 0.00748236,
+    "initialProviderRequests": 9,
+    "finalLedgerProviderRequests": 3,
+    "importedAt": "2026-10-08T10:44:40.1333676Z",
+    "acceptanceSha256": "D93FE92761180DE3E8300CE30413BBEBC89CACBCAC622674A86A1DA52A4DDF54",
+    "ledgerSha256": "E8BB96292EAB9AC90E8D03AB8D2C4EA062E43AE92F628E8587607DD1098CB01D"
+  },
+  "startedAt": "2026-10-08T10:46:17.5016156Z"
+}

@@ -1,0 +1,67 @@
+{
+  "recordedAt": "2026-10-07T12:57:03.9709886Z",
+  "status": "STOPPED_AFTER_FAILURE",
+  "originalProcessesPreserved": true,
+  "preparationFailure": "Human evaluation intro used smart double quotes inside a PowerShell double-quoted string; parameter binding failed before login. Fixed with a literal here-string. No provider request from this failure.",
+  "realContinuation": {
+    "submitted": [
+      "01-B",
+      "01-8-A"
+    ],
+    "completed": [
+      "01-B"
+    ],
+    "failed": [
+      "01-8-A"
+    ],
+    "notSubmitted": [
+      "01-8-B",
+      "02-A",
+      "02-B",
+      "03-A",
+      "03-B"
+    ],
+    "automaticRetries": 0
+  },
+  "newProviderRequests": 6,
+  "totalBusinessRuns": 3,
+  "totalProviderRequests": 9,
+  "chargedUsd": 0.00748236,
+  "remainingUsd": 0.99251764,
+  "reservedUsd": 0,
+  "acknowledgementFix": {
+    "sourceFixed": true,
+    "deployedToRetainedGateway": false,
+    "originalFailedStatePreserved": true,
+    "noAdditionalGenerationForValidation": true
+  },
+  "verification": {
+    "resumeReadOnlyCheck": "PASS",
+    "wrongPortRejected": "PASS",
+    "concurrentResumeRejected": "PASS",
+    "alreadyExecutedBatchRejected": "PASS",
+    "humanPacketBinding": "PASS",
+    "gatewayTypecheck": "PASS",
+    "offlineProviderContract": "PASS",
+    "actualFailedReceiptOfflineReplay": "PASS"
+  },
+  "code": [
+    {
+      "path": "scripts\\run-sb12-remaining-live.ps1",
+      "sha256": "0C3512D620EF33E53360711EFD14881E7ECFF152452C76D2F6B9F6D96130238C"
+    },
+    {
+      "path": "examples\\pi-agent-gateway\\src\\storyboard-schema.ts",
+      "sha256": "C18C57BCF78544EE411FC9A6A6ED699043AF5BB98609C2F1711E3E530F68C9A7"
+    },
+    {
+      "path": "examples\\pi-agent-gateway\\src\\runtime.ts",
+      "sha256": "C18276CCEF87B1B651852BCE0BF1C73E213F5BBE5CB3C4668169005D0E16AD7E"
+    },
+    {
+      "path": "examples\\pi-agent-gateway\\scripts\\provider-contract.ts",
+      "sha256": "333025DF3732C8A2C52BEBAE7E300435FB022B22CBCBD3E7AC01E2D4173621E3"
+    }
+  ],
+  "nextStep": "Independent review of offline fix and three-run ledger; prepare continuation for only the five unsubmitted labels using latest charged totals, without rerunning failed or completed labels."
+}

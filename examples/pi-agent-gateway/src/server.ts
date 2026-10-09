@@ -2,7 +2,7 @@ import { randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createRuntime } from "./runtime.ts";
 import { parseTaskType, type TaskType } from "./profiles.ts";
-import { BudgetController, liveBudgetConfig, type ProviderRequestLedgerEntry } from "./budget.ts";
+import { BudgetController, BudgetExceededError, liveBudgetConfig, type ProviderRequestLedgerEntry } from "./budget.ts";
 import { selectLiveModel } from "./live-provider.ts";
 
 type Runtime = ReturnType<typeof createRuntime>;
@@ -10,6 +10,7 @@ type Status = "running" | "completed" | "failed" | "cancelled";
 type Session = {
   id: string; userId: string; projectId: string; screenplayId: string;
   taskType: TaskType;
+  applicationRunId?: string;
   runtime: Runtime; activeRun?: string; touchedAt: number; needsNewSession?: boolean;
 };
 type Run = {
@@ -116,28 +117,33 @@ async function executeRun(session: Session, run: Run): Promise<void> {
   let failure: string | undefined;
   try {
     if (!run.stopReason) {
-      if (session.taskType === "generate_storyboard") budget?.beginBusinessRun(run.id);
-      session.runtime.prepareRun();
-      emit(run, "run.started", {});
+      // Every live task is metered, including rewrite_storyboard_shot. Java's
+      // durable ID also prevents a new Gateway session from replaying a run.
+      budget?.beginBusinessRun(session.applicationRunId ?? run.id);
+      session.runtime.prepareRun(run.id);
+      emit(run, "run.started", { mode: process.env.AGENT_MODE === "live" ? "live" : "mock" });
       await session.runtime.agent.prompt(run.message);
       // Pi records provider errors in state; prompt() can resolve on failure.
       const last = session.runtime.agent.state.messages.at(-1);
       if (session.runtime.agent.state.errorMessage || last?.role !== "assistant" || last.stopReason !== "stop") {
         console.error(`Agent run ${run.id} provider/tool failure: ${session.runtime.agent.state.errorMessage ?? "assistant did not stop cleanly"}`);
-        failure = "generation_failed";
+        failure = session.runtime.getBudgetFailure() ?? session.runtime.getStoryboardFailure() ?? "generation_failed";
       } else if (!session.runtime.hasValidStructuredResult()) {
         console.error(`Agent run ${run.id} ended without a valid structured result acknowledgement`);
-        failure = "invalid_structured_output";
+        failure = session.runtime.getStoryboardFailure() ?? "invalid_structured_output";
       }
     }
   } catch (error) {
     // Keep request/context/model content out of logs; the reason is enough to
     // distinguish an adapter or schema failure from a model interruption.
     console.error(`Agent run ${run.id} failed: ${error instanceof Error ? error.message : "unknown error"}`);
-    failure = "generation_failed";
+    failure = error instanceof BudgetExceededError ? error.code : session.runtime.getBudgetFailure() ?? session.runtime.getStoryboardFailure() ?? "generation_failed";
   }
   finally {
     clearTimeout(timer);
+    try { session.runtime.finishRun(); }
+    catch { failure = "budget_uncertain"; }
+    failure = session.runtime.getBudgetFailure() ?? failure;
     run.status = run.stopReason === "user_cancelled" ? "cancelled" : run.stopReason || failure ? "failed" : "completed";
     run.endedAt = Date.now();
     run.providerLedger = session.runtime.getProviderLedger();
@@ -225,7 +231,7 @@ const server = createServer((req, res) => {
         const active = sessions.get(id)?.activeRun;
         const run = active ? runs.get(active) : undefined;
         if (run) emit(run, type, data);
-      }, taskType === "generate_storyboard" ? budget : undefined);
+      }, budget);
       sessions.set(id, { ...scope, id, runtime, touchedAt: Date.now() });
       json(res, 201, { sessionId: id }); return;
     }

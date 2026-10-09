@@ -1,0 +1,16 @@
+{
+  "diagnosedAt": "2026-10-07T12:44:53.3241842Z",
+  "javaRunId": "ef36082d-5384-4a03-84b8-9df16d692398",
+  "gatewayRunId": "669e7699-c2f4-4f07-9c30-35817fc2413c",
+  "persistedStatus": "failed",
+  "gatewayErrorCode": "invalid_structured_output",
+  "saveToolSucceeded": true,
+  "savedStoryboardId": "a55499c7-a9aa-452e-9ad9-12266c65e219",
+  "savedShots": 8,
+  "finalAcknowledgement": "```json\n{\n  \"artifactId\": \"a55499c7-a9aa-452e-9ad9-12266c65e219\",\n  \"resultRef\": {\n    \"type\": \"storyboard\",\n    \"id\": \"a55499c7-a9aa-452e-9ad9-12266c65e219\",\n    \"storyboardId\": \"a55499c7-a9aa-452e-9ad9-12266c65e219\"\n  }\n}\n```",
+  "fencedReceiptMatchesSavedArtifact": true,
+  "cause": "Model returned a correct persisted-artifact receipt inside a single Markdown json fence. Runtime applied JSON.parse directly to the fenced text and rejected the acknowledgement.",
+  "actions": "Original failed status and all usage retained. Saved artifact and public events exported for diagnosis. No retry; five later samples not submitted.",
+  "humanEvaluation": "Pending",
+  "generationRequestsDuringDiagnosis": 0
+}

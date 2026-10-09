@@ -1,0 +1,86 @@
+{
+  "archivedAt": "2026-10-07T11:26:30.6114805Z",
+  "originalPath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261007\\01-A",
+  "archivePath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261007\\01-A.preflight-only-20261007-192628",
+  "reason": "An earlier preparation attempt created 01-A but stopped before generation submission. The launcher refused to overwrite that record.",
+  "observations": {
+    "originalFileCount": 11,
+    "originalLogsEmpty": true,
+    "preflightReady": true,
+    "generationRequestAbsent": true,
+    "acceptedRunAbsent": true,
+    "dedicatedServicePortsInactive": true,
+    "dedicatedDatabaseContainerAbsent": true,
+    "noActiveLauncherOrMaven": true
+  },
+  "submissionAssessment": "No generation was submitted by this preserved launcher attempt: it did not reach the generation-request file write, which precedes the generation POST. This is not a provider billing statement.",
+  "unknown": "The original preparation failure message was not captured; its exact cause cannot be reconstructed from these files.",
+  "verification": {
+    "originalHashesPreserved": true,
+    "jdk21Package": "PASS, tests skipped",
+    "offlineGatewayTypecheck": "PASS",
+    "offlineProviderContract": "PASS",
+    "offlineBudgetContract": "PASS",
+    "existingEvidenceRefusalPreservesAllHashes": "PASS",
+    "jdk17RejectedBeforeEvidenceCreation": "PASS",
+    "preparationLogDirectory": "C:\\Users\\tcf\\AppData\\Local\\Temp\\sb12-01a-preparation-0e430541d3314f02b5a196f0d54e51f3"
+  },
+  "nextStep": "Run the corrected 01-A launcher once in the original PowerShell with the real key. Do not start the remaining batch before independent acceptance.",
+  "files": [
+    {
+      "path": "01-A.configuration.json",
+      "bytes": 2676,
+      "sha256": "7419B0486CFB09408E45201382455192F58C53A0982739E85931CBC2DB1970BB"
+    },
+    {
+      "path": "01-A.human-reference.md",
+      "bytes": 1410,
+      "sha256": "70B78EA1B3AD2E5A0C0984F404777EAD1A3B84D995958D0CD65BF5EC34A12F2C"
+    },
+    {
+      "path": "01-A.source.md",
+      "bytes": 750,
+      "sha256": "BE76B378C65FFA98AAFC064A65257ACD99D3BDE149C8FD55CB4F790B1462A435"
+    },
+    {
+      "path": "budget-contract.txt",
+      "bytes": 344,
+      "sha256": "47A6EE260EA8AA26638C198212B3E240188C2BAAD6419DA3AFFE93933DD33723"
+    },
+    {
+      "path": "gateway-typecheck.txt",
+      "bytes": 94,
+      "sha256": "461A843AEBCD7D082A12EA3798EF6020670326684F178AD1536C4EF9E7E40D02"
+    },
+    {
+      "path": "preflight-live.json",
+      "bytes": 364,
+      "sha256": "F548FEFA0E84E70489E034CEA8500528B1E3CB09CA88D4785E3A3D8FC022A787"
+    },
+    {
+      "path": "provider-contract.txt",
+      "bytes": 299,
+      "sha256": "756817F6A45E341AD6E4429AE3E8C904B7AB354DC1C1DFE9F41210D275A1EFBA"
+    },
+    {
+      "path": "snapshot-src_profiles.ts",
+      "bytes": 5780,
+      "sha256": "BA063F85FB517AA990770AD3E999B641E138BB245EC62F23E55502DA1AE57DB6"
+    },
+    {
+      "path": "snapshot-src_runtime.ts",
+      "bytes": 18237,
+      "sha256": "8004FDD1D8D4FD528ACA3188339D52D17955490E79E81CB9E99457AAA4DC749C"
+    },
+    {
+      "path": "snapshot-src_storyboard-schema.ts",
+      "bytes": 15391,
+      "sha256": "655995A68EC056DABB08F6F9047E3BC7AE43F58D8DDFAC7D900DE22480DDEA25"
+    },
+    {
+      "path": "snapshot-src_storyboard-tools.ts",
+      "bytes": 5344,
+      "sha256": "8BDAB9EF8CF6FB97DAACD5D16600125BCC9595C8E0BC1C7D637FCDC6674ECD81"
+    }
+  ]
+}

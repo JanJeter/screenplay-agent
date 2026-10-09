@@ -1,0 +1,8 @@
+{
+  "stage": "fresh-startup",
+  "label": "",
+  "resume": false,
+  "failedAt": "2026-10-08T10:38:27.4845439Z",
+  "automaticResubmissionAllowed": false,
+  "reason": "Batch stopped; inspect preserved stage and run evidence before any continuation."
+}

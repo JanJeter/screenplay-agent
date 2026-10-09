@@ -30,10 +30,10 @@ const profiles: Record<TaskType, TaskProfile> = {
   check_plot_logic: { id: "check_plot_logic", allowedTools: readTools,
     resultContract: "输出 JSON 对象，字段为 contradictions、evidence、fixes；只生成检查报告，不写剧本。", requiredResultKeys: ["contradictions", "evidence", "fixes"], maxToolCalls: 5 },
   generate_storyboard: { id: "generate_storyboard", allowedTools: storyboardTools,
-    resultContract: "必须先调用 get_storyboard_context。只根据返回的冻结上下文生成与 targetShotCount 完全相等的 shots，sourceQuote 必须是 sceneText 的原文片段。不得输出 ID、归属、revision 或额外字段。调用 save_storyboard_result 后，只返回该工具实际返回的 JSON {artifactId,resultRef}，不要再写另一份分镜。",
+    resultContract: "必须先调用 get_storyboard_context。只根据返回的冻结上下文生成与 targetShotCount 完全相等的 shots。原文只在 sourceQuotes 列表提供，每镜选与其内容对应的 sourceQuoteId，允许多个镜头选同一片段；不要自行重写、拼接引用，优先不传 sourceQuote。sourceQuoteId 之外不得输出业务 ID、归属、revision 或额外字段。调用 save_storyboard_result 后，只返回该工具实际返回的 JSON {artifactId,resultRef}，不要再写另一份分镜。",
     requiredResultKeys: [], maxToolCalls: 6, maxOutputTokens: 8192 },
   rewrite_storyboard_shot: { id: "rewrite_storyboard_shot", allowedTools: storyboardTools,
-    resultContract: "必须先调用 get_storyboard_context。只生成一个 proposalShot 的可编辑字段，保持来源事实和相邻镜头连续性。不得输出或修改 targetShotId、其他镜头、顺序、revision 或剧本文本。调用 save_storyboard_result 后，只返回该工具实际返回的 JSON {artifactId,resultRef}。",
+    resultContract: "必须先调用 get_storyboard_context。只生成一个 proposalShot 的可编辑字段，保持来源事实和相邻镜头连续性。原文在 sourceQuotes 列表提供，选择与目标镜头内容对应的 sourceQuoteId；不要改写、拼接引用，优先不传 sourceQuote。不得输出或修改 targetShotId、其他镜头、顺序、revision 或剧本文本。调用 save_storyboard_result 后，只返回该工具实际返回的 JSON {artifactId,resultRef}。",
     requiredResultKeys: [], maxToolCalls: 6, maxOutputTokens: 8192 },
 };
 

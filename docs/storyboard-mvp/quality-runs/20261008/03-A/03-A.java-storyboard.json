@@ -1,0 +1,73 @@
+{
+  "id": "892b2e26-b54e-49a5-9a75-8d76ec2693f5",
+  "projectId": "4",
+  "createdBy": "1",
+  "sourceRunId": "92b4001e-2368-442d-89d8-96877c2f71b2",
+  "sourceSnapshot": {
+    "scriptId": "4",
+    "scriptRevision": 1,
+    "sourceSceneId": "4",
+    "sceneNo": 1,
+    "heading": "EXT. 城郊站台 - 清晨",
+    "sceneText": "EXT. 城郊站台 - 清晨\n\n雾贴着空站台。自动售票机的蓝光闪烁，一张被雨水打湿的车票贴在长椅脚边。\n\n清洁工推着空车从画面远处经过，没有停下。铁轨尽头传来很远的鸟叫，没有列车进站。\n\n风把车票吹到黄线前，又停住。雾慢慢遮住铁轨。",
+    "sceneHash": "e944910af6327fa91f22cddac2442dd40fcf24958bee3003b4da0b6d30f759d5"
+  },
+  "revision": 1,
+  "createdAt": "2026-10-08T10:46:35.795798Z",
+  "updatedAt": "2026-10-08T10:46:35.795798Z",
+  "shots": [
+    {
+      "id": "7b0ceb87-fc97-4a0b-a3ae-6997b0ff96c4",
+      "orderIndex": 0,
+      "shotSize": "ESTABLISHING",
+      "cameraMovement": "STATIC",
+      "visualDescription": "清晨城郊站台的全景：浓雾紧贴空荡的站台地面，远处的铁轨隐没在白雾里。画面左侧自动售票机发出幽蓝的屏幕光，在雾气中晕成一小团冷色光斑。站台上没有乘客，只有被雾柔软化的长椅轮廓。",
+      "dialogue": "",
+      "sound": "极轻的雾气环境声，远处偶尔的风声，几乎无人的寂静",
+      "durationSeconds": 6,
+      "imagePrompt": "Cinematic wide establishing shot, empty suburban train platform at dawn, thick fog hugging the ground, an automated ticket machine glowing soft blue in the mist, vacant benches, no people, cold desaturated color palette, cool cyan-blue accent light, diffused low-key morning light, shallow atmospheric haze, 35mm film look, subtle grain, no train, melancholic quiet mood, high detail",
+      "videoPrompt": "Static wide shot, fog drifting slowly across the empty platform, the ticket machine's blue glow flickering gently in the haze, faint breeze moving the mist, no camera movement, no people entering frame, no train, moody dawn atmosphere, cinematic 24fps, soft natural light, film grain",
+      "sourceQuote": "雾贴着空站台。自动售票机的蓝光闪烁"
+    },
+    {
+      "id": "50983edb-520e-4826-9812-0d5e0e0242be",
+      "orderIndex": 1,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "DOLLY_IN",
+      "visualDescription": "镜头缓缓推进至长椅脚边：一张被雨水打湿的车票贴在湿冷的站台地面上，纸面吸水后微微发皱、边缘卷起，表面反射着自动售票机投来的蓝光。水渍在票面上泛出细小的反光，长椅金属脚被雾水浸得发亮。",
+      "dialogue": "",
+      "sound": "安静，只有空气流动的细微声与极轻的湿地面环境音",
+      "durationSeconds": 5,
+      "imagePrompt": "Extreme close-up, a rain-soaked paper ticket stuck to wet concrete at the foot of a bench, water beaded on its crumpled surface, reflections of blue ticket-machine light, damp metal bench leg, shallow depth of field, macro detail, cool blue and grey tones, cinematic lighting, film grain, dawn haze",
+      "videoPrompt": "Slow dolly in toward the wet ticket on the ground, camera pushing closer to the damp paper, tiny water reflections shimmering, mist curling around the bench leg, delicate shallow focus, no people, no train, quiet melancholic dawn, cinematic 24fps, subtle grain",
+      "sourceQuote": "一张被雨水打湿的车票贴在长椅脚边"
+    },
+    {
+      "id": "2ca8b4ec-1c47-4d49-9cd1-9029893d67a5",
+      "orderIndex": 2,
+      "shotSize": "WIDE",
+      "cameraMovement": "PAN",
+      "visualDescription": "清洁工推着装满清洁工具的空车从站台远端缓缓经过，身影在雾中被压成浅灰的剪影，没有停下脚步，也没有看向长椅。镜头随其移动缓缓横摇，空车顺着站台延伸出去，站台依旧没有任何乘客与列车。",
+      "dialogue": "",
+      "sound": "清洁车轮胎碾过湿地面滚动的声音，由远及近又渐渐远去",
+      "durationSeconds": 7,
+      "imagePrompt": "Cinematic wide shot, a lone janitor pushing an empty cleaning cart along a foggy suburban platform at dawn, silhouette softened by mist, no eye contact, medium grey and blue tones, cool blue accent glow from ticket machine in background, deep atmospheric fog, uncluttered composition, 35mm film look, subtle grain, no passengers, no train",
+      "videoPrompt": "Slow tracking pan following the janitor pushing the empty cart from far to near and out of frame, backlit by fog and blue machine glow, mist swirling around the wheels, cart never stopping, no dialogue, no train, quiet dawn atmosphere, cinematic 24fps, soft film grain",
+      "sourceQuote": "清洁工推着空车从画面远处经过，没有停下"
+    },
+    {
+      "id": "b701edca-92ee-4397-9461-d564e2056783",
+      "orderIndex": 3,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "STATIC",
+      "visualDescription": "固定机位对着站台边缘的黄线：风把湿车票从长椅脚边吹到黄线前，纸片贴着地面短暂滑行后停住，微微颤动。镜头深处，铁轨尽头逐渐被缓慢涌来的雾完全吞没，依然没有列车进站，只有空荡荡的轨道消失在白雾里。",
+      "dialogue": "",
+      "sound": "空旷站台的风声，铁轨尽头极远的鸟叫声，随后一切渐弱归于寂静",
+      "durationSeconds": 8,
+      "imagePrompt": "Cinematic medium shot, a wet paper ticket blown by the wind sliding to a stop just before the yellow safety line on an empty foggy platform, distant tracks dissolving into thick white fog, no train, cold cyan and grey palette, subtle blue light reflections on damp concrete, atmospheric haze, 35mm film look, fine grain, melancholic dawn mood",
+      "videoPrompt": "Static medium shot, wind pushes the damp ticket along the wet platform until it halts trembling near the yellow line, fog creeping slowly and swallowing the far end of the rails, no train arriving, faint distant birdsong then fading to silence, camera stays fixed, cinematic 24fps, soft film grain",
+      "sourceQuote": "风把车票吹到黄线前，又停住。雾慢慢遮住铁轨"
+    }
+  ],
+  "proposalSummaries": []
+}

@@ -1,0 +1,96 @@
+{
+  "carryover": {
+    "sourceRunId": "ef36082d-5384-4a03-84b8-9df16d692398",
+    "sourceTraceId": "1a00fd13-e61d-4ab9-bb25-854245ce9a37",
+    "initialBusinessRuns": 3,
+    "initialChargedUsd": 0.00748236,
+    "initialProviderRequests": 9,
+    "finalLedgerProviderRequests": 3,
+    "importedAt": "2026-10-08T10:44:40.1333676Z",
+    "acceptanceSha256": "D93FE92761180DE3E8300CE30413BBEBC89CACBCAC622674A86A1DA52A4DDF54",
+    "ledgerSha256": "E8BB96292EAB9AC90E8D03AB8D2C4EA062E43AE92F628E8587607DD1098CB01D"
+  },
+  "completed": [
+    {
+      "label": "01-8-B",
+      "javaRunId": "421bbb1b-fcf6-4052-b3a5-8ea4cd619e06",
+      "gatewayRunId": "04ddfa64-760b-4244-bb5f-7eec2659b2c4",
+      "traceId": "8968e290-63a6-44f5-8442-97464b83f749",
+      "status": "completed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "3e9880ac-0986-4867-a04b-cbb1ee794605",
+        "storyboardId": "3e9880ac-0986-4867-a04b-cbb1ee794605"
+      },
+      "providerRequests": 3,
+      "retries": 0.0,
+      "chargedUsd": 0.010850508,
+      "remainingUsd": 0.989149492
+    },
+    {
+      "label": "02-A",
+      "javaRunId": "cc34803b-e998-4e4a-8bd6-c7c8e3f8873d",
+      "gatewayRunId": "4d4a2d45-babf-4324-8d7a-3f18a9cd2462",
+      "traceId": "43c8ed09-3374-46c0-8ecf-6087363118e7",
+      "status": "completed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "e8065c17-87ff-44c4-a9d9-9d10f00bd1fe",
+        "storyboardId": "e8065c17-87ff-44c4-a9d9-9d10f00bd1fe"
+      },
+      "providerRequests": 3,
+      "retries": 0.0,
+      "chargedUsd": 0.013244868,
+      "remainingUsd": 0.986755132
+    },
+    {
+      "label": "02-B",
+      "javaRunId": "13c3292b-ad70-4a7e-af4a-ec3ec0bbcdfd",
+      "gatewayRunId": "23b9f1cf-5e0c-41ff-9048-d7b129280e77",
+      "traceId": "840ca371-a397-4528-8bad-a5ed59d2f4c7",
+      "status": "completed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "f2bc2e42-ef32-494f-a51a-59ef17650e12",
+        "storyboardId": "f2bc2e42-ef32-494f-a51a-59ef17650e12"
+      },
+      "providerRequests": 3,
+      "retries": 0.0,
+      "chargedUsd": 0.015839952,
+      "remainingUsd": 0.984160048
+    },
+    {
+      "label": "03-A",
+      "javaRunId": "92b4001e-2368-442d-89d8-96877c2f71b2",
+      "gatewayRunId": "85df10ef-cfce-45c7-8210-d46b51384119",
+      "traceId": "0cac17a1-754f-4cdc-9077-199c0340bf8f",
+      "status": "completed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "892b2e26-b54e-49a5-9a75-8d76ec2693f5",
+        "storyboardId": "892b2e26-b54e-49a5-9a75-8d76ec2693f5"
+      },
+      "providerRequests": 3,
+      "retries": 0.0,
+      "chargedUsd": 0.017683140000000003,
+      "remainingUsd": 0.98231686
+    },
+    {
+      "label": "03-B",
+      "javaRunId": "9b0f71b0-07bf-4bfb-850d-9f9de08cfd80",
+      "gatewayRunId": "ea19a78d-6f3c-4d92-9dbf-bc114de649db",
+      "traceId": "21736005-bd7d-48be-882d-7a3fc5369d50",
+      "status": "failed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "be29bb7c-28fc-4d0c-9232-2af921ed1784",
+        "storyboardId": "be29bb7c-28fc-4d0c-9232-2af921ed1784"
+      },
+      "providerRequests": 4,
+      "retries": 0.0,
+      "chargedUsd": 0.021636012000000003,
+      "remainingUsd": 0.978363988
+    }
+  ],
+  "updatedAt": "2026-10-08T10:46:53.1799395Z"
+}

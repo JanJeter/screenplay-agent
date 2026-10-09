@@ -1,0 +1,92 @@
+{
+  "runId": "1eed782e-f149-41ec-bd9e-dc83802919fe",
+  "status": "completed",
+  "providerRequests": [
+    {
+      "sequence": 1,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-07T12:39:30.529Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 4166,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.000110712,
+      "endedAt": "2026-10-07T12:39:31.185Z",
+      "durationMs": 656,
+      "actualUsage": {
+        "input": 226,
+        "output": 30,
+        "cacheRead": 1152,
+        "cacheWrite": 0,
+        "totalTokens": 1408
+      },
+      "actualCostUsd": 0.000110712
+    },
+    {
+      "sequence": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-07T12:39:31.222Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 5857,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.001739748,
+      "endedAt": "2026-10-07T12:39:38.446Z",
+      "durationMs": 7224,
+      "actualUsage": {
+        "input": 263,
+        "output": 1377,
+        "cacheRead": 1408,
+        "cacheWrite": 0,
+        "totalTokens": 3048
+      },
+      "actualCostUsd": 0.001739748
+    },
+    {
+      "sequence": 3,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-07T12:39:38.542Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 12022,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.000370824,
+      "endedAt": "2026-10-07T12:39:39.475Z",
+      "durationMs": 933,
+      "actualUsage": {
+        "input": 842,
+        "output": 87,
+        "cacheRead": 2304,
+        "cacheWrite": 0,
+        "totalTokens": 3233
+      },
+      "actualCostUsd": 0.000370824
+    }
+  ],
+  "budget": {
+    "businessRuns": 2,
+    "businessRunCap": 8,
+    "chargedUsd": 0.004878431999999999,
+    "reservedUsd": 0,
+    "remainingUsd": 0.995121568,
+    "capUsd": 1
+  }
+}

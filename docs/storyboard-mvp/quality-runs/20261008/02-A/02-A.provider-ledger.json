@@ -1,0 +1,92 @@
+{
+  "runId": "4d4a2d45-babf-4324-8d7a-3f18a9cd2462",
+  "status": "completed",
+  "providerRequests": [
+    {
+      "sequence": 1,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:05.038Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 4166,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.000116712,
+      "endedAt": "2026-10-08T10:46:06.192Z",
+      "durationMs": 1154,
+      "actualUsage": {
+        "input": 226,
+        "output": 35,
+        "cacheRead": 1152,
+        "cacheWrite": 0,
+        "totalTokens": 1413
+      },
+      "actualCostUsd": 0.000116712
+    },
+    {
+      "sequence": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:06.203Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 5956,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.002071548,
+      "endedAt": "2026-10-08T10:46:14.184Z",
+      "durationMs": 7981,
+      "actualUsage": {
+        "input": 273,
+        "output": 1651,
+        "cacheRead": 1408,
+        "cacheWrite": 0,
+        "totalTokens": 3332
+      },
+      "actualCostUsd": 0.002071548
+    },
+    {
+      "sequence": 3,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:14.237Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 13957,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.00020609999999999997,
+      "endedAt": "2026-10-08T10:46:15.167Z",
+      "durationMs": 930,
+      "actualUsage": {
+        "input": 239,
+        "output": 96,
+        "cacheRead": 3200,
+        "cacheWrite": 0,
+        "totalTokens": 3535
+      },
+      "actualCostUsd": 0.00020609999999999997
+    }
+  ],
+  "budget": {
+    "businessRuns": 5,
+    "businessRunCap": 8,
+    "chargedUsd": 0.013244868,
+    "reservedUsd": 0,
+    "remainingUsd": 0.986755132,
+    "capUsd": 1
+  }
+}

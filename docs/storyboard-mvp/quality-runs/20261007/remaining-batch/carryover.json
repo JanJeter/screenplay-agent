@@ -1,0 +1,10 @@
+{
+  "sourceRunId": "05d93636-7cf1-43db-beed-3dd2047291af",
+  "sourceTraceId": "5f37a648-5ab3-4238-a683-3c9f5ac4c885",
+  "initialBusinessRuns": 1,
+  "initialChargedUsd": 0.002657148,
+  "initialProviderRequests": 3,
+  "importedAt": "2026-10-07T12:19:55.1464953Z",
+  "acceptanceSha256": "916B46B2B7BFC9E3BD4ADD4AB5A20362E851CA9BD9BFD22E928CD9177E5AD1EE",
+  "ledgerSha256": "7A6301ADFABE4D43CE5D6F4618878C90DCB9E33B5259D6E356112759D09804D9"
+}

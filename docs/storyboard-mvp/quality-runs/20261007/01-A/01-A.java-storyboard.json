@@ -1,0 +1,99 @@
+{
+  "id": "d9a4954e-a67b-4532-b998-720a11381163",
+  "projectId": "1",
+  "createdBy": "1",
+  "sourceRunId": "05d93636-7cf1-43db-beed-3dd2047291af",
+  "sourceSnapshot": {
+    "scriptId": "1",
+    "scriptRevision": 1,
+    "sourceSceneId": "1",
+    "sceneNo": 1,
+    "heading": "INT. 旧公寓客厅 - 夜",
+    "sceneText": "INT. 旧公寓客厅 - 夜\n\n雨敲着窗。许晴站在门边，没有进来。林舟从抽屉里拿出一封牛皮纸信，信封完整，封口未拆。\n\n许晴：你说有东西要给我。\n\n林舟把信藏到身后，停了两秒，又把它放到茶几上。\n\n林舟：不是现在。\n\n许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。\n\n许晴：那我先替你保管。\n\n林舟没有回答。雨声更响了。",
+    "sceneHash": "d5a923751a6e721ee6159ca231cbf0c189f297995b1063cd5107b8da51d94a96"
+  },
+  "revision": 1,
+  "createdAt": "2026-10-07T11:30:04.780932Z",
+  "updatedAt": "2026-10-07T11:30:04.780932Z",
+  "shots": [
+    {
+      "id": "6374d266-a233-4eab-8ba0-0ce755a8fac4",
+      "orderIndex": 0,
+      "shotSize": "ESTABLISHING",
+      "cameraMovement": "STATIC",
+      "visualDescription": "冷调夜色中的旧公寓客厅，窗外雨线斜打玻璃，室内只一盏暖黄小灯，被雨色压成低饱和青灰。许晴的身影停在门边，门框将她的轮廓切成一道暗边，她没有进来。",
+      "dialogue": "",
+      "sound": "密集夜雨敲窗，隔着玻璃的闷响，室内极安静",
+      "durationSeconds": 4,
+      "imagePrompt": "cinematic still, low color temperature, teal-gray tones, dim old apartment living room at night, rain streaking on window glass, single warm lamp crushed by cold ambient, woman in silhouette standing at the doorway, not entering, door frame cutting her shape, muted desaturated palette, shallow depth, film grain, 35mm anamorphic, subtle rim light",
+      "videoPrompt": "Slow static establishing shot of a dim old apartment living room at night, cold teal-gray color grade, rain streaking across the window glass, dust and moisture in the air, a woman stands at the doorway without stepping in, only faint breathing motion and rain movement, camera locked off, holds ~4 seconds, cinematic low-key lighting, film grain",
+      "sourceQuote": "雨敲着窗。许晴站在门边，没有进来。"
+    },
+    {
+      "id": "5f715426-b3a9-49b5-b425-709d6ccaeae6",
+      "orderIndex": 1,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "DOLLY_IN",
+      "visualDescription": "林舟拉开抽屉，手伸进去取出一个牛皮纸信封，信封边角平整、封口完好未拆。镜头缓缓推近，光线压得低冷，他的手在低光里显出轻微迟疑的停顿。",
+      "dialogue": "",
+      "sound": "木质抽屉拉开的摩擦声，雨声持续",
+      "durationSeconds": 4,
+      "imagePrompt": "cinematic medium shot, low color temperature, man's hand pulling open a wooden drawer and taking out a sealed kraft-paper envelope, envelope intact with unopened flap, dim cold night light, subtle hesitation in the fingers, teal-gray grade, shallow depth of field, 50mm lens, film grain, moody realistic lighting",
+      "videoPrompt": "Medium dolly-in toward a man at a drawer, cold desaturated night grade, he slides the drawer open and lifts out a sealed kraft envelope, the flap clearly unopened, his hand hesitates a beat, gentle push-in, muted ambient rain, ~4 seconds, cinematic realism, film grain",
+      "sourceQuote": "林舟从抽屉里拿出一封牛皮纸信，信封完整，封口未拆。"
+    },
+    {
+      "id": "f612ad2b-3c6c-4443-b919-857abb475a75",
+      "orderIndex": 2,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "STATIC",
+      "visualDescription": "许晴站在门边，目光落在林舟手上那封信上，脸上没有表情波动，只有雨光在颊侧流动。冷调压暗肤色，门外的湿冷气息凝在她肩头。",
+      "dialogue": "你说有东西要给我。",
+      "sound": "许晴语声克制平稳，雨声铺底",
+      "durationSeconds": 3,
+      "imagePrompt": "cinematic close-up, low color temperature, woman at a doorway looking quietly toward someone off-screen, no overt expression, rain light sliding across her cheek, desaturated teal-gray grade, wet-cold atmosphere on her shoulders, shallow depth, 85mm lens, film grain, restrained realistic style",
+      "videoPrompt": "Close-up static shot, cold desaturated grade, a woman at the doorway speaks calmly to someone off frame, faint eye movement toward the side, rain light moves slowly across her face, minimal expression, ~3 seconds, cinematic low-key, film grain",
+      "sourceQuote": "许晴：你说有东西要给我。"
+    },
+    {
+      "id": "324cd8de-cbf4-4592-9677-c162f0ae8d55",
+      "orderIndex": 3,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "TRACK",
+      "visualDescription": "林舟先把手里的信藏到身后，手背绷紧；停了两秒，他才将信缓缓放到茶几上。镜头随动作轻微横移，冷光勾出信封边缘与桌面的雨影。",
+      "dialogue": "不是现在。",
+      "sound": "信封落在茶几上的轻响，雨声渐强",
+      "durationSeconds": 5,
+      "imagePrompt": "cinematic medium shot, low color temperature, man first hiding a sealed kraft envelope behind his back, then slowly placing it on a coffee table, tense hand, two-second pause, dim cold night light, teal-gray grade, track camera, rain shadows on table surface, 50mm lens, film grain",
+      "videoPrompt": "Medium tracking shot, cold desaturated grade, a man hides a sealed envelope behind his back, hesitates, then slowly sets it down on the coffee table, camera slides slightly with the motion, quiet deliberate pacing, rain intensifying, ~5 seconds, cinematic realism, film grain",
+      "sourceQuote": "林舟把信藏到身后，停了两秒，又把它放到茶几上。"
+    },
+    {
+      "id": "412e5518-9663-4746-8a0c-b51963203af8",
+      "orderIndex": 4,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "TILT",
+      "visualDescription": "许晴走到茶几前，俯身拿起那封未拆的信。镜头随她起手上移，信封封口清晰入画，她的指尖没有去揭封口的动作，只抬头看向林舟。",
+      "dialogue": "那我先替你保管。",
+      "sound": "脚步轻响，纸信封被拿起的细微摩擦声",
+      "durationSeconds": 5,
+      "imagePrompt": "cinematic close-up, low color temperature, woman stepping to a coffee table and lifting an unopened kraft envelope, fingers not breaking the seal, then looking up off-screen, camera tilting up with her hand, cold teal-gray grade, shallow depth on the intact flap, 85mm lens, film grain",
+      "videoPrompt": "Close-up with slow tilt following a woman's hand, cold desaturated grade, she walks to the table and picks up a sealed envelope, deliberately not opening it, then lifts her gaze toward someone off frame, quiet controlled motion, ~5 seconds, cinematic low-key, film grain",
+      "sourceQuote": "许晴：那我先替你保管。"
+    },
+    {
+      "id": "7e811451-b636-4706-ade3-62a36f1f077d",
+      "orderIndex": 5,
+      "shotSize": "EXTREME_CLOSE_UP",
+      "cameraMovement": "STATIC",
+      "visualDescription": "林舟的脸部特写，冷光沿下颌切过，他没有回答，喉结微动，视线落在她手中信封的方向。雨声吞掉沉默，画面收在极浅景深与低饱和冷调里。",
+      "dialogue": "",
+      "sound": "雨声更响，压过一切，室内沉默",
+      "durationSeconds": 4,
+      "imagePrompt": "cinematic extreme close-up, very low color temperature, man's face in cold rim light, jaw traced by shadow, silent non-answer, slight throat movement, gaze angled off-screen toward a held envelope, extremely shallow depth of field, teal-gray desaturated grade, 100mm macro, film grain",
+      "videoPrompt": "Extreme close-up static shot, cold desaturated grade, man's face stays silent without answering, minute throat movement and a faint eye shift off-screen, rain grows louder around him, almost no body motion, ~4 seconds, cinematic low-key realism, film grain",
+      "sourceQuote": "林舟没有回答。雨声更响了。"
+    }
+  ],
+  "proposalSummaries": []
+}

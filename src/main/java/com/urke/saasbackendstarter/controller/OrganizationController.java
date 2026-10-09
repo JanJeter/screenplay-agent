@@ -37,13 +37,14 @@ public class OrganizationController {
     private final OrganizationService organizationService;
     private final OrganizationMapper organizationMapper;
     private final MessageSource messageSource;
+    private final com.urke.saasbackendstarter.security.CurrentUserProvider currentUser;
 
     /**
      * Create and register a new organization entity.
      */
     @Operation(
-        summary = "Create a new organization",
-        description = "Create and register a new organization entity. Only accessible by authenticated users.",
+        summary = "Organization creation is unavailable in the fixed workbench",
+        description = "This workbench uses the configured team workspace; authenticated requests receive 403.",
         security = @SecurityRequirement(name = "bearerAuth"),
         responses = {
             @ApiResponse(responseCode = "200", description = "Organization created successfully"),
@@ -55,9 +56,7 @@ public class OrganizationController {
     public ResponseEntity<OrganizationSummary> createOrg(
             @Valid @RequestBody OrganizationCreateRequest request,
             Locale locale) {
-        Organization org = organizationService.create(request);
-        OrganizationSummary summary = organizationMapper.toSummary(org);
-        return ResponseEntity.ok().body(summary);
+        throw fixedWorkspace();
     }
 
     /**
@@ -65,7 +64,7 @@ public class OrganizationController {
      */
     @Operation(
         summary = "Get paged organizations",
-        description = "Retrieve a paged list of all organizations, optionally filtered by name.",
+        description = "Return only the authenticated user's workspace, optionally filtered by name.",
         security = @SecurityRequirement(name = "bearerAuth"),
         parameters = {
             @Parameter(name = "page", description = "Page number (zero-based)", example = "0"),
@@ -78,28 +77,28 @@ public class OrganizationController {
         }
     )
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Page<OrganizationSummary>> getAllPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String name) {
 
+        if (page < 0 || size < 1 || size > 100) throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "分页参数无效");
         Pageable pageable = PageRequest.of(page, size);
-        Page<Organization> orgPage;
-        if (name != null && !name.isBlank()) {
-            orgPage = organizationService.findAllByNameFilter(name, pageable);
-        } else {
-            orgPage = organizationService.findAll(pageable);
-        }
-        Page<OrganizationSummary> summaries = orgPage.map(organizationMapper::toSummary);
-        return ResponseEntity.ok(summaries);
+        Organization own = currentUser.getCurrentOrganization();
+        boolean matches = own != null && !own.isDeleted() && (name == null || name.isBlank()
+                || own.getName().toLowerCase(Locale.ROOT).contains(name.trim().toLowerCase(Locale.ROOT)));
+        java.util.List<OrganizationSummary> content = matches && page == 0 ? java.util.List.of(organizationMapper.toSummary(own)) : java.util.List.of();
+        return ResponseEntity.ok(new org.springframework.data.domain.PageImpl<>(content, pageable, matches ? 1 : 0));
     }
 
     /**
      * Soft delete an organization by its ID. Only accessible by admins.
      */
     @Operation(
-        summary = "Delete organization (soft delete)",
-        description = "Soft delete an organization by its ID. Only accessible by admins.",
+        summary = "Organization deletion is unavailable in the fixed workbench",
+        description = "This workbench uses the configured team workspace; authenticated requests receive 403.",
         security = @SecurityRequirement(name = "bearerAuth"),
         parameters = {
             @Parameter(name = "id", description = "ID of the organization to delete", required = true)
@@ -112,9 +111,11 @@ public class OrganizationController {
         }
     )
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteOrganization(@PathVariable Long id, Locale locale) {
-        organizationService.deleteOrganization(id);
-        return ResponseEntity.noContent().build();
+        throw fixedWorkspace();
+    }
+    private org.springframework.web.server.ResponseStatusException fixedWorkspace() {
+        return new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN,
+                "当前工作台使用固定团队工作区，不支持此操作");
     }
 }

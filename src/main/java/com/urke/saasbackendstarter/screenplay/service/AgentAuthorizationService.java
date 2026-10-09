@@ -26,6 +26,9 @@ public class AgentAuthorizationService {
         }
         User user = users.findByIdAndDeletedFalse(claims.userId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Agent user is not active"));
+        if (!user.isEnabled() || !user.isEmailVerified()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Agent user is not active");
+        }
         if (user.getOrganization() == null || !claims.organizationId().equals(user.getOrganization().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Agent organization mismatch");
         }

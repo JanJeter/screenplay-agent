@@ -2,129 +2,108 @@ package com.urke.saasbackendstarter.service.impl;
 
 import com.urke.saasbackendstarter.domain.RefreshToken;
 import com.urke.saasbackendstarter.domain.User;
-import com.urke.saasbackendstarter.dto.auth.LoginRequest;
-import com.urke.saasbackendstarter.dto.auth.LoginResponse;
-import com.urke.saasbackendstarter.dto.auth.RefreshTokenRequest;
-import com.urke.saasbackendstarter.dto.auth.RefreshTokenResponse;
-import com.urke.saasbackendstarter.exception.AuthException;
+import com.urke.saasbackendstarter.dto.auth.*;
+import com.urke.saasbackendstarter.exception.AccountApiException;
 import com.urke.saasbackendstarter.repository.RefreshTokenRepository;
 import com.urke.saasbackendstarter.repository.UserRepository;
-import com.urke.saasbackendstarter.security.JwtTokenProvider;
-import com.urke.saasbackendstarter.security.LoginAttemptService;
+import com.urke.saasbackendstarter.security.*;
 import com.urke.saasbackendstarter.service.AuthService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.EntityManager;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
-    private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final LoginAttemptService loginAttemptService;
-    private final MessageSource messageSource;
-
-    // Refresh token validity duration (7 days)
-    private final long refreshTokenDurationMs = 7 * 24 * 60 * 60 * 1000;
+    private final UserRepository users;
+    private final RefreshTokenRepository refreshTokens;
+    private final PasswordEncoder passwords;
+    private final LoginAttemptService attempts;
+    private final EntityManager entityManager;
+    // A fixed BCrypt workload also applies to unknown users. This is a hash, not a usable credential.
+    private static final String DUMMY_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+    @Value("${jwt.refresh-token-duration-ms:604800000}")
+    private long refreshTokenDurationMs = 604800000;
 
     @Override
     @Transactional
     public LoginResponse login(LoginRequest request) {
-        String email = request.getEmail();
-
-        if (loginAttemptService.isBlocked(email)) {
-            long secondsLeft = loginAttemptService.getBlockTimeRemaining(email) / 1000;
-            throw new AuthException(
-                messageSource.getMessage("auth.login.blocked",
-                        new Object[]{secondsLeft},
-                        "Too many failed login attempts. Try again in {0} seconds.",
-                        LocaleContextHolder.getLocale())
-            );
+        String email = AccountInputs.email(request.getEmail());
+        if (attempts.isBlocked(email)) throw new AccountApiException(HttpStatus.TOO_MANY_REQUESTS, "rate_limited", "登录尝试过于频繁，请稍后再试。");
+        User found = users.findByEmailIgnoreCaseAndDeletedFalse(email).orElse(null);
+        String password = request.getPassword();
+        boolean matched = password != null && password.length() <= 64
+                && password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 72
+                && passwords.matches(password, found == null ? DUMMY_HASH : found.getPassword());
+        if (!matched || found == null) {
+            attempts.loginFailed(email);
+            throw credentials();
         }
-
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, request.getPassword())
-            );
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            loginAttemptService.loginSucceeded(email);
-
-            String accessToken = jwtTokenProvider.generateToken(userDetails);
-            String refreshToken = createRefreshToken(
-                userRepository.findByEmailAndDeletedFalse(email)
-                        .orElseThrow(() -> new AuthException(messageSource.getMessage("user.notfound", null, LocaleContextHolder.getLocale())))
-            );
-
-            return new LoginResponse(accessToken, refreshToken);
-        } catch (BadCredentialsException ex) {
-            loginAttemptService.loginFailed(email);
-            throw new AuthException(messageSource.getMessage("auth.invalid.credentials", null, LocaleContextHolder.getLocale()));
-        }
+        User user = users.findLockedById(found.getId()).orElseThrow(this::credentials);
+        entityManager.refresh(user);
+        // Password can have changed while the first BCrypt comparison ran.
+        if (!passwords.matches(password, user.getPassword())) throw credentials();
+        requireUsable(user);
+        attempts.loginSucceeded(email);
+        String accessToken = jwtTokenProvider.generateToken(new CustomUserDetails(user));
+        return new LoginResponse(accessToken, createRefreshToken(user));
     }
 
     @Override
+    @Transactional
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
-        String requestToken = request.getRefreshToken();
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(requestToken)
-                .orElseThrow(() -> new AuthException(
-                    messageSource.getMessage("auth.refresh.invalid", null, LocaleContextHolder.getLocale())
-                ));
-
-        if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
-            throw new AuthException(
-                messageSource.getMessage("auth.refresh.invalid", null, LocaleContextHolder.getLocale())
-            );
+        String raw = request.getRefreshToken();
+        if (raw == null || raw.isBlank() || raw.length() > 128) throw credentials();
+        String stored = "sha256:" + AccountTokens.hash(raw);
+        Long owner = refreshTokens.findOwnerId(stored).orElse(null);
+        // Existing one-week sessions can migrate once; all new refresh tokens are hashed.
+        if (owner == null && raw.matches("[0-9a-fA-F-]{36}")) {
+            stored = raw;
+            owner = refreshTokens.findOwnerId(stored).orElse(null);
         }
-
-        User user = refreshToken.getUser();
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities(user.getRoles().stream()
-                        .map(role -> "ROLE_" + role.getName())
-                        .toArray(String[]::new))
-                .build();
-
-        String newAccessToken = jwtTokenProvider.generateToken(userDetails);
-
-        return new RefreshTokenResponse(newAccessToken, requestToken);
+        if (owner == null) throw credentials();
+        User user = users.findLockedById(owner).orElseThrow(this::credentials);
+        entityManager.refresh(user);
+        RefreshToken token = refreshTokens.findByToken(stored).orElseThrow(this::credentials);
+        if (!token.getExpiryDate().isAfter(Instant.now()) || token.getTokenVersion() != user.getTokenVersion()) throw credentials();
+        requireUsable(user);
+        String access = jwtTokenProvider.generateToken(new CustomUserDetails(user));
+        return new RefreshTokenResponse(access, createRefreshToken(user));
     }
 
     @Override
     @Transactional
     public void logout(String email) {
-        User user = userRepository.findByEmailAndDeletedFalse(email)
-                .orElseThrow(() -> new AuthException(
-                        messageSource.getMessage("user.notfound", null, LocaleContextHolder.getLocale())
-                ));
-        refreshTokenRepository.deleteByUser(user);
-        loginAttemptService.loginSucceeded(email);
+        User found = users.findByEmailIgnoreCaseAndDeletedFalse(AccountInputs.email(email)).orElseThrow(this::credentials);
+        User user = users.findLockedById(found.getId()).orElseThrow(this::credentials);
+        entityManager.refresh(user);
+        refreshTokens.deleteByUser(user);
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        users.save(user);
+        attempts.loginSucceeded(user.getEmail());
     }
 
     private String createRefreshToken(User user) {
-        refreshTokenRepository.deleteByUser(user);
-        String token = UUID.randomUUID().toString();
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(token)
-                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
-                .user(user)
-                .build();
-        refreshTokenRepository.save(refreshToken);
-        return token;
+        refreshTokens.deleteByUser(user);
+        // Ensure old rows are deleted before inserting the rotated token.
+        refreshTokens.flush();
+        String raw = AccountTokens.create();
+        refreshTokens.save(RefreshToken.builder().token("sha256:" + AccountTokens.hash(raw)).user(user)
+                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs)).tokenVersion(user.getTokenVersion()).build());
+        return raw;
     }
+
+    private void requireUsable(User user) {
+        if (user.isDeleted()) throw credentials();
+        if (!user.isEnabled()) throw new AccountApiException(HttpStatus.FORBIDDEN, "account_disabled", "账号已停用，请联系管理员。");
+        if (!user.isEmailVerified()) throw new AccountApiException(HttpStatus.FORBIDDEN, "email_not_verified", "请先验证邮箱，再登录。");
+    }
+
+    private AccountApiException credentials() { return new AccountApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials", "邮箱或密码错误，或登录凭据已失效。"); }
 }

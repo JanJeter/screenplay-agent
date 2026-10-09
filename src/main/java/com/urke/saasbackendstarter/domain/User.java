@@ -48,4 +48,17 @@ public class User {
 
     @Column(nullable = false)
     private boolean deleted = false;
+
+    // Legacy accounts remain usable; registration explicitly starts unverified.
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean emailVerified = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private long tokenVersion = 0;
 }

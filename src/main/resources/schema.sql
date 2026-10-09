@@ -1,4 +1,21 @@
 -- Compatibility migration for databases created before ScriptVersion.contentRevision.
+-- Existing accounts keep their verified/enabled state when account onboarding is introduced.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema=current_schema() AND table_name='users') THEN
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified boolean NOT NULL DEFAULT true;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS enabled boolean NOT NULL DEFAULT true;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version bigint NOT NULL DEFAULT 0;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema=current_schema() AND table_name='refresh_tokens') THEN
+    ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS token_version bigint NOT NULL DEFAULT 0;
+  END IF;
+END $$@@
+CREATE TABLE IF NOT EXISTS account_action_limits (
+  id varchar(64) PRIMARY KEY, next_allowed_at timestamp with time zone NOT NULL,
+  window_started_at timestamp with time zone NOT NULL, requests integer NOT NULL
+)@@
+
 -- Keep this script idempotent: the project still uses Hibernate ddl-auto:update and
 -- may start against either a populated legacy database or an empty database.
 DO $$

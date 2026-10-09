@@ -1,0 +1,17 @@
+{
+  "id": "421bbb1b-fcf6-4052-b3a5-8ea4cd619e06",
+  "sessionId": "6fa787c5-cb6d-4160-b748-15e4c27c2bc3",
+  "parentRunId": null,
+  "agentId": "generate_storyboard",
+  "traceId": "8968e290-63a6-44f5-8442-97464b83f749",
+  "status": "completed",
+  "errorCode": null,
+  "createdAt": "2026-10-08T10:45:50.115187Z",
+  "startedAt": "2026-10-08T10:45:50.171584Z",
+  "endedAt": "2026-10-08T10:46:04.100453Z",
+  "resultRef": {
+    "type": "storyboard",
+    "id": "3e9880ac-0986-4867-a04b-cbb1ee794605",
+    "storyboardId": "3e9880ac-0986-4867-a04b-cbb1ee794605"
+  }
+}

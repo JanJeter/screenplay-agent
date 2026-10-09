@@ -110,7 +110,8 @@ function assertModelVisibleStoryboardSchema(payload: Record<string, unknown>): v
   assert.equal(shots.maxItems, 8);
   const editableShot = shots.items as Record<string, unknown>;
   assert.equal(editableShot.additionalProperties, false);
-  assert.deepEqual(editableShot.required, ["shotSize", "cameraMovement", "visualDescription", "dialogue", "sound", "durationSeconds", "imagePrompt", "videoPrompt", "sourceQuote"]);
+  assert.deepEqual(editableShot.required, ["shotSize", "cameraMovement", "visualDescription", "dialogue", "sound", "durationSeconds", "imagePrompt", "videoPrompt"]);
+  assert.deepEqual(editableShot.anyOf, [{ required: ["sourceQuoteId"] }, { required: ["sourceQuote"] }]);
   const fields = editableShot.properties as Record<string, Record<string, unknown>>;
   assert.equal(fields.durationSeconds.minimum, 1);
   assert.equal(fields.durationSeconds.maximum, 30);
@@ -120,6 +121,7 @@ function assertModelVisibleStoryboardSchema(payload: Record<string, unknown>): v
   assert.equal(fields.imagePrompt.maxLength, 2_000);
   assert.equal(fields.videoPrompt.maxLength, 2_500);
   assert.equal(fields.sourceQuote.maxLength, 500);
+  assert.equal(fields.sourceQuoteId.maxLength, 80);
   assert.deepEqual(fields.shotSize.enum, ["ESTABLISHING", "WIDE", "MEDIUM", "CLOSE_UP", "EXTREME_CLOSE_UP"]);
   assert.deepEqual(fields.cameraMovement.enum, ["STATIC", "PAN", "TILT", "DOLLY_IN", "DOLLY_OUT", "TRACK", "HANDHELD"]);
 }
@@ -300,13 +302,19 @@ try {
     const events = await (await gatewayCall(`/agent/runs/${run.runId}/events`)).text();
     if (runId === "run-save-failure") {
       assert.match(events, /event: run.failed/);
+      assert.match(events, /"code":"storyboard_save_failed"/);
       assert.doesNotMatch(events, /event: run.completed/);
     } else {
       assert.match(events, /event: run.completed/);
-      const payload = postedResults.get(runId) as { result?: { shots?: unknown[]; mode?: string } } | undefined;
+      const payload = postedResults.get(runId) as { result?: { shots?: { visualDescription: string; sourceQuote: string }[]; proposalShot?: { visualDescription: string; sourceQuote: string }; mode?: string } } | undefined;
       assert.ok(payload?.result, `${runId} must submit a result`);
       if (runId === "run-generate-6") assert.equal(payload.result.shots?.length, 6);
       if (taskType === "rewrite_storyboard_shot") assert.equal(payload.result.mode, "rewrite");
+      const mockShots = payload.result.shots ?? [payload.result.proposalShot!];
+      for (const shot of mockShots) {
+        assert.ok(shot.visualDescription.startsWith("[Mock 流程测试]"), "persisted and exported mock results must identify the flow test");
+        assert.ok(!shot.sourceQuote.includes("[Mock 流程测试]"), "mock marking must not alter source quotations");
+      }
     }
   }
   console.log("PASS: provider-visible result schema, semantic save receipts, R6 Chinese/escaped/rewrite capacity, storyboard 4/6/8, invalid/truncated output, Java numeric IDs, save failure, and rewrite target isolation");
@@ -316,3 +324,5 @@ try {
   await new Promise<void>((resolve) => adapter.close(() => resolve()));
   if (child.exitCode !== null && child.exitCode !== 0) process.stderr.write(gatewayLog);
 }
+
+await import("./source-quote-contract.ts");

@@ -75,7 +75,31 @@ pi-agent-gateway/
 
 SSE 断开只停止订阅，run 继续；用户点停止才调用 cancel。事件在连接建立前就缓存，晚订阅也不会丢开头。服务重启会丢失会话和事件。客户端收到终态后应关闭流；重新订阅时仍需鉴权。Java 转发层也需要保留 id/event/data、发送心跳和关闭代理缓冲。
 
-## 接入真实 LLM
+## 日常工作台预算
+
+模型通过 `get_storyboard_context.sourceQuotes` 读取原文片段并选择 `sourceQuoteId`。ID 绑定当前冻结原文的 hash 和字符区间；Gateway 将它映射为精确 `sourceQuote` 后，再走原 Java 结构与原文包含校验。旧的精确 `sourceQuote` 仍可用；不存在的 ID、改写或拼接引用、ID 与文本冲突均拒绝保存。模型上下文只提供一次原文文本，避免重复占用输入预算。
+
+首次保存失败会立即终止本次 Agent 运行，阻止额外模型请求反复盲改。`storyboard_source_quote_invalid` 表示来源引用无效，`storyboard_result_invalid` 表示结果结构无效，`storyboard_save_failed` 表示未能确认 Java 保存成功；最后一种情况应先查看已有任务结果，再决定是否创建新任务。
+
+日常入口默认 mock，不产生模型费用。live 必须先明确新活动授权，使用 `AGENT_BUDGET_PROFILE=workbench`，不能复用封存 SB-12 的启动参数、账本或运行数据。
+
+| 变量 | 含义 |
+|---|---|
+| `AGENT_ACTIVITY_ID` | 独立活动 ID，3～80 个字母、数字、点、下划线或横线，不以 SB12/SB-12 开头 |
+| `AGENT_BUDGET_LEDGER_PATH` | 独立 JSON 账本的绝对路径，位于持久开发数据目录，不能放入历史 quality-runs |
+| `AGENT_BUSINESS_RUN_LIMIT` | 显式授权的业务次数；整场生成、单镜重做及其他 live 任务共用 |
+| `AGENT_BUDGET_USD` | 显式授权的美元上限，无默认额度 |
+| `AGENT_INPUT_TOKEN_RESERVE`、`AGENT_PROVIDER_INPUT_OVERHEAD_TOKENS` | 每请求输入保守预留及 provider 开销 |
+
+同时设置 `PI_PROVIDER=deepseek`、`PI_MODEL=deepseek-flash`，提供全部 `PI_*_USD_PER_MTOK` 费率（缓存费率为零也须显式设置）和 `PI_PRICING_SOURCE`；正式调用前核对官方模型与适用费率。服务凭据与模型密钥沿用进程安全注入，不写入浏览器。workbench 配置拒绝混用任何 `SB12_*` 变量。`npm run preflight` 的 `readyForLiveRun` 只表示配置通过，无网络请求，也不表示已经获得预算授权。
+
+账本在发请求前同步写入次数和费用预留，记录每次 usage、请求标识、配置费率金额和零自动重试。正常重启承接数据；中断后未取得 usage 的预留保守按全额计入，不能当成供应商确认扣款。账本独占写入，活动 ID、额度、模型或费率与已有账本不一致、账本损坏或写入失败时均拒绝继续请求；不能靠重启或修改配置清零。新授权使用新的独立活动及账本，旧账本保留。
+
+额度拒绝会形成 `run.failed` SSE 终态：`business_run_limit`（次数已满）、`budget_exhausted`（费用不足下次预留）、`business_run_duplicate`（相同 Java 业务任务已执行）、`budget_context_limit`（输入超过预留）或 `budget_uncertain`（账本异常）。已用尽的活动不会调用模型。`npm run budget:check` 包含重启、异常账本、单进程独占、两种分镜任务的费用拒绝及真实 HTTP/SSE 离线回归。
+
+## 历史 SB-12 的真实 LLM 配置（兼容保留）
+
+以下 `SB12_*` 配置仅保留给原固定批次代码兼容，仍限制八次业务运行和最多 USD 1；封存批次不重跑，日常操作使用上面的独立 workbench 配置。
 
 live 支持通过 `PI_PROVIDER` 选择 Anthropic 或 DeepSeek 官方 API；凭据只从 Gateway 本地进程环境读取，不读取 coding-agent 的用户 OAuth 配置。先通过 secret store 向进程注入所选 provider 的凭据和与 Java 匹配的服务凭据，不能把实际密钥写入命令历史、仓库、日志或前端环境。
 

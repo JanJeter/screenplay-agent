@@ -50,6 +50,7 @@ public class UserController {
     private final CurrentUserProvider currentUserProvider;
     private final MessageSource messageSource;
     private final UserMapper userMapper;
+    private final org.springframework.beans.factory.ObjectProvider<com.urke.saasbackendstarter.service.AccountRateLimiter> accountLimits;
 
     private String msg(String code) {
         return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
@@ -72,10 +73,11 @@ public class UserController {
         }
     )
     @PostMapping("/register")
-    public ResponseEntity<UserSummary> register(
-            @Valid @RequestBody UserCreateRequest request) {
-        User user = userService.register(request);
-        return ResponseEntity.ok(userMapper.toSummary(user));
+    public ResponseEntity<java.util.Map<String, String>> register(
+            @Valid @RequestBody UserCreateRequest request, jakarta.servlet.http.HttpServletRequest http) {
+        accountLimits.getObject().check("account-ip:" + http.getRemoteAddr(), 0, 60);
+        userService.register(request);
+        return ResponseEntity.ok(java.util.Map.of("message", com.urke.saasbackendstarter.service.AccountLifecycleService.REGISTER_MESSAGE));
     }
 
     @Operation(

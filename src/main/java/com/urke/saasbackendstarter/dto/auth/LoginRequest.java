@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.Locale;
 
 /**
  * DTO for user login requests.
@@ -25,4 +26,6 @@ public class LoginRequest {
      */
     @NotBlank
     private String password;
+
+    public void setEmail(String email) { this.email = email == null ? null : email.trim().toLowerCase(Locale.ROOT); }
 }

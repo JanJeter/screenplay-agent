@@ -15,12 +15,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class AgentEventService {
+    private static final Set<String> PUBLIC_GATEWAY_FAILURE_CODES = Set.of(
+            "budget_exhausted", "business_run_limit", "business_run_duplicate",
+            "budget_context_limit", "budget_uncertain", "storyboard_source_quote_invalid",
+            "storyboard_result_invalid", "storyboard_save_failed", "invalid_structured_output");
     private final AgentEventRepository events;
     private final AgentRunRepository runs;
     private final AgentDraftRepository drafts;
@@ -63,7 +68,7 @@ public class AgentEventService {
                 errorCode = null;
             } else {
                 status = AgentRunStatus.FAILED;
-                errorCode = "run.completed".equals(gatewayType) ? "draft_missing" : "gateway_failed";
+                errorCode = "run.completed".equals(gatewayType) ? "draft_missing" : gatewayFailureCode(gatewayPayload);
             }
             run.setStatus(status);
             run.setErrorCode(errorCode);
@@ -111,6 +116,13 @@ public class AgentEventService {
     private JsonNode parse(String payload) {
         try { return json.readTree(payload); }
         catch (JsonProcessingException ex) { throw new IllegalStateException("Stored Agent event is invalid", ex); }
+    }
+
+    private String gatewayFailureCode(JsonNode payload) {
+        // Persist only public codes, never arbitrary provider messages. The same
+        // reason must survive SSE reconnects and a browser's later GET /runs.
+        String code = payload == null ? "" : payload.path("data").path("code").asText();
+        return PUBLIC_GATEWAY_FAILURE_CODES.contains(code) ? code : "gateway_failed";
     }
 
     private boolean terminal(AgentRunStatus status) {

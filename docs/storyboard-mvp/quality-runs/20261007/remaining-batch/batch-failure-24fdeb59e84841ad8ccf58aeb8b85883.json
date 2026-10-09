@@ -1,0 +1,8 @@
+{
+  "stage": "human-evaluation-packet",
+  "label": "",
+  "resume": true,
+  "failedAt": "2026-10-07T12:35:42.6385612Z",
+  "automaticResubmissionAllowed": false,
+  "reason": "Batch stopped; inspect preserved stage and run evidence before any continuation."
+}

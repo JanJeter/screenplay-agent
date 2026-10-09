@@ -1,176 +1,107 @@
 package com.urke.saasbackendstarter.service.impl;
 
-import com.urke.saasbackendstarter.domain.RefreshToken;
-import com.urke.saasbackendstarter.domain.Role;
-import com.urke.saasbackendstarter.domain.User;
-import com.urke.saasbackendstarter.dto.auth.LoginRequest;
-import com.urke.saasbackendstarter.dto.auth.LoginResponse;
-import com.urke.saasbackendstarter.dto.auth.RefreshTokenRequest;
-import com.urke.saasbackendstarter.dto.auth.RefreshTokenResponse;
-import com.urke.saasbackendstarter.exception.AuthException;
-import com.urke.saasbackendstarter.repository.RefreshTokenRepository;
-import com.urke.saasbackendstarter.repository.UserRepository;
-import com.urke.saasbackendstarter.security.JwtTokenProvider;
-import com.urke.saasbackendstarter.security.LoginAttemptService;
+import com.urke.saasbackendstarter.domain.*;
+import com.urke.saasbackendstarter.dto.auth.*;
+import com.urke.saasbackendstarter.exception.AccountApiException;
+import com.urke.saasbackendstarter.repository.*;
+import com.urke.saasbackendstarter.security.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.springframework.context.MessageSource;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.time.Instant;
 import java.util.*;
-
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
-
-    @Mock private AuthenticationManager authenticationManager;
-    @Mock private JwtTokenProvider jwtTokenProvider;
-    @Mock private UserRepository userRepository;
-    @Mock private RefreshTokenRepository refreshTokenRepository;
-    @Mock private PasswordEncoder passwordEncoder;
-    @Mock private LoginAttemptService loginAttemptService;
-    @Mock private MessageSource messageSource;
-
-    @InjectMocks
-    private AuthServiceImpl authService;
-
+    @Mock JwtTokenProvider jwtTokenProvider;
+    @Mock UserRepository users;
+    @Mock RefreshTokenRepository refreshTokens;
+    @Mock PasswordEncoder passwords;
+    @Mock LoginAttemptService attempts;
+    @Mock jakarta.persistence.EntityManager entityManager;
+    @InjectMocks AuthServiceImpl service;
     private User user;
-    private Role role;
-
-    @BeforeEach
-    void setUp() {
-        // Test role
-        role = new Role();
-        role.setName("USER");
-
-        // Test user
-        user = new User();
-        user.setEmail("user@example.com");
-        user.setPassword("encodedPassword");
-        user.setRoles(Set.of(role));
-        user.setDeleted(false);
+    @BeforeEach void setup() { user = User.builder().id(3L).email("user@example.test").password("hashed-password").roles(Set.of()).tokenVersion(2).build(); }
+    private void loginUser() {
+        when(users.findByEmailIgnoreCaseAndDeletedFalse(user.getEmail())).thenReturn(Optional.of(user));
+        when(users.findLockedById(user.getId())).thenReturn(Optional.of(user));
+        when(passwords.matches(anyString(), eq(user.getPassword()))).thenReturn(true);
     }
-
-    @Test
-    void login_successful() {
-        LoginRequest request = new LoginRequest("user@example.com", "Secret123");
-        Authentication authentication = mock(Authentication.class);
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities("ROLE_USER")
-                .build();
-
-        when(loginAttemptService.isBlocked(user.getEmail())).thenReturn(false);
-        when(authenticationManager.authenticate(any())).thenReturn(authentication);
-        when(authentication.getPrincipal()).thenReturn(userDetails);
-        when(userRepository.findByEmailAndDeletedFalse(user.getEmail())).thenReturn(Optional.of(user));
-        when(jwtTokenProvider.generateToken(any())).thenReturn("access.jwt.token");
-        doNothing().when(loginAttemptService).loginSucceeded(user.getEmail());
-        when(refreshTokenRepository.deleteByUser(user)).thenReturn(1);
-        when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        LoginResponse response = authService.login(request);
-
-        assertThat(response.getAccessToken()).isEqualTo("access.jwt.token");
-        assertThat(response.getRefreshToken()).isNotBlank();
-        assertThat(response.getTokenType()).isEqualTo("Bearer");
-        verify(loginAttemptService).loginSucceeded(user.getEmail());
+    private RefreshToken refresh(String raw) {
+        String hash = "sha256:" + AccountTokens.hash(raw);
+        RefreshToken token = RefreshToken.builder().token(hash).user(user).tokenVersion(2).expiryDate(Instant.now().plusSeconds(1000)).build();
+        when(refreshTokens.findOwnerId(hash)).thenReturn(Optional.of(user.getId()));
+        when(users.findLockedById(user.getId())).thenReturn(Optional.of(user));
+        when(refreshTokens.findByToken(hash)).thenReturn(Optional.of(token));
+        return token;
     }
-
-    @Test
-    void login_blockedUser_shouldThrowException() {
-        LoginRequest request = new LoginRequest("user@example.com", "Secret123");
-        when(loginAttemptService.isBlocked(user.getEmail())).thenReturn(true);
-        when(loginAttemptService.getBlockTimeRemaining(user.getEmail())).thenReturn(60000L);
-        when(messageSource.getMessage(any(), any(), any(), any())).thenReturn("Blocked!");
-
-        assertThatThrownBy(() -> authService.login(request))
-            .isInstanceOf(AuthException.class)
-            .hasMessageContaining("Blocked!");
-        verify(loginAttemptService, never()).loginSucceeded(anyString());
+    private void fails(String code, Runnable action) {
+        var error = catchThrowableOfType(action::run, AccountApiException.class);
+        assertThat(error).isNotNull(); assertThat(error.code()).isEqualTo(code);
     }
-
-    @Test
-    void login_invalidCredentials_shouldThrowException() {
-        LoginRequest request = new LoginRequest("user@example.com", "badpass");
-        when(loginAttemptService.isBlocked(user.getEmail())).thenReturn(false);
-        when(authenticationManager.authenticate(any()))
-            .thenThrow(new BadCredentialsException("Bad credentials"));
-        when(messageSource.getMessage(eq("auth.invalid.credentials"), any(), any()))
-            .thenReturn("Invalid credentials");
-        doNothing().when(loginAttemptService).loginFailed(user.getEmail());
-
-        assertThatThrownBy(() -> authService.login(request))
-            .isInstanceOf(AuthException.class)
-            .hasMessageContaining("Invalid credentials");
-        verify(loginAttemptService).loginFailed(user.getEmail());
+    @Test void verifiedLoginNormalizesEmailAndStoresOnlyRefreshHash() {
+        loginUser(); when(jwtTokenProvider.generateToken(any())).thenReturn("test-access-token");
+        var result = service.login(new LoginRequest(" USER@EXAMPLE.TEST ", "test-only-password"));
+        var stored = ArgumentCaptor.forClass(RefreshToken.class); verify(refreshTokens).save(stored.capture());
+        assertThat(result.getAccessToken().equals("test-access-token")).isTrue();
+        assertThat(stored.getValue().getToken().equals("sha256:" + AccountTokens.hash(result.getRefreshToken()))).isTrue();
+        assertThat(stored.getValue().getTokenVersion()).isEqualTo(2);
     }
-
-    @Test
-    void refreshToken_successful() {
-        String refreshTokenValue = "refresh-token";
-        RefreshTokenRequest request = new RefreshTokenRequest(refreshTokenValue);
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(refreshTokenValue)
-                .expiryDate(Instant.now().plusSeconds(600))
-                .user(user)
-                .build();
-        when(refreshTokenRepository.findByToken(refreshTokenValue)).thenReturn(Optional.of(refreshToken));
-        when(jwtTokenProvider.generateToken(any(UserDetails.class))).thenReturn("new.access.token");
-
-        RefreshTokenResponse response = authService.refreshToken(request);
-
-        assertThat(response.getAccessToken()).isEqualTo("new.access.token");
-        assertThat(response.getRefreshToken()).isEqualTo(refreshTokenValue);
-        assertThat(response.getTokenType()).isEqualTo("Bearer");
+    @ParameterizedTest @ValueSource(strings = {"unverified", "disabled", "deleted"})
+    void unusableAccountsCannotLogin(String state) {
+        loginUser();
+        if (state.equals("unverified")) user.setEmailVerified(false);
+        if (state.equals("disabled")) user.setEnabled(false);
+        if (state.equals("deleted")) user.setDeleted(true);
+        fails(state.equals("unverified") ? "email_not_verified" : state.equals("disabled") ? "account_disabled" : "invalid_credentials",
+                () -> service.login(new LoginRequest(user.getEmail(), "test-only-password")));
+        verifyNoInteractions(jwtTokenProvider, refreshTokens);
     }
-
-    @Test
-    void refreshToken_expired_shouldThrowException() {
-        String refreshTokenValue = "expired-token";
-        RefreshTokenRequest request = new RefreshTokenRequest(refreshTokenValue);
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(refreshTokenValue)
-                .expiryDate(Instant.now().minusSeconds(10))
-                .user(user)
-                .build();
-        when(refreshTokenRepository.findByToken(refreshTokenValue)).thenReturn(Optional.of(refreshToken));
-        when(messageSource.getMessage(eq("auth.refresh.invalid"), any(), any())).thenReturn("Refresh token invalid");
-
-        assertThatThrownBy(() -> authService.refreshToken(request))
-            .isInstanceOf(AuthException.class)
-            .hasMessageContaining("Refresh token invalid");
+    @Test void wrongPasswordNeverDisclosesUnverifiedStatus() {
+        user.setEmailVerified(false); when(users.findByEmailIgnoreCaseAndDeletedFalse(user.getEmail())).thenReturn(Optional.of(user));
+        fails("invalid_credentials", () -> service.login(new LoginRequest(user.getEmail(), "test-only-password")));
+        verify(attempts).loginFailed(user.getEmail()); verify(users, never()).findLockedById(any());
     }
-
-    @Test
-    void logout_shouldDeleteRefreshTokenAndUnblockUser() {
-        when(userRepository.findByEmailAndDeletedFalse(user.getEmail())).thenReturn(Optional.of(user));
-        when(refreshTokenRepository.deleteByUser(user)).thenReturn(1);
-        doNothing().when(loginAttemptService).loginSucceeded(user.getEmail());
-
-        assertThatCode(() -> authService.logout(user.getEmail())).doesNotThrowAnyException();
-
-        verify(refreshTokenRepository).deleteByUser(user);
-        verify(loginAttemptService).loginSucceeded(user.getEmail());
+    @Test void blockedLoginDoesNotReadCredentials() {
+        when(attempts.isBlocked(user.getEmail())).thenReturn(true);
+        fails("rate_limited", () -> service.login(new LoginRequest(user.getEmail(), "test-only-password")));
+        verifyNoInteractions(users, passwords);
     }
-
-    @Test
-    void logout_userNotFound_shouldThrowException() {
-        when(userRepository.findByEmailAndDeletedFalse(user.getEmail())).thenReturn(Optional.empty());
-        when(messageSource.getMessage(eq("user.notfound"), any(), any())).thenReturn("User not found");
-
-        assertThatThrownBy(() -> authService.logout(user.getEmail()))
-            .isInstanceOf(AuthException.class)
-            .hasMessageContaining("User not found");
-        verify(refreshTokenRepository, never()).deleteByUser(any());
+    @Test void loginRechecksThePasswordAfterRefreshingTheLockedUser() {
+        loginUser();
+        doAnswer(invocation -> { user.setPassword("concurrently-reset-password-hash"); return null; }).when(entityManager).refresh(user);
+        fails("invalid_credentials", () -> service.login(new LoginRequest(user.getEmail(), "test-only-password")));
+        verifyNoInteractions(jwtTokenProvider, refreshTokens);
+    }
+    @Test void refreshRotatesAndBindsTheNewTokenToTheCurrentVersion() {
+        String raw = AccountTokens.create(); refresh(raw); when(jwtTokenProvider.generateToken(any())).thenReturn("new-access-token");
+        var response = service.refreshToken(new RefreshTokenRequest(raw));
+        assertThat(response.getRefreshToken().equals(raw)).isFalse();
+        verify(refreshTokens).deleteByUser(user); verify(refreshTokens).save(any());
+    }
+    @ParameterizedTest @ValueSource(strings = {"expired", "revoked", "disabled", "unverified", "deleted"})
+    void refreshRejectsExpiredRevokedOrUnusableAccounts(String state) {
+        String raw = AccountTokens.create(); var token = refresh(raw);
+        if (state.equals("expired")) token.setExpiryDate(Instant.now().minusSeconds(1));
+        if (state.equals("revoked")) user.setTokenVersion(3);
+        if (state.equals("disabled")) user.setEnabled(false);
+        if (state.equals("unverified")) user.setEmailVerified(false);
+        if (state.equals("deleted")) user.setDeleted(true);
+        fails(state.equals("disabled") ? "account_disabled" : state.equals("unverified") ? "email_not_verified" : "invalid_credentials",
+                () -> service.refreshToken(new RefreshTokenRequest(raw)));
+        verifyNoInteractions(jwtTokenProvider); verify(refreshTokens, never()).save(any());
+    }
+    @Test void logoutRevokesBothRefreshAndAccess() {
+        when(users.findByEmailIgnoreCaseAndDeletedFalse(user.getEmail())).thenReturn(Optional.of(user));
+        when(users.findLockedById(user.getId())).thenReturn(Optional.of(user));
+        service.logout(user.getEmail());
+        verify(refreshTokens).deleteByUser(user); assertThat(user.getTokenVersion()).isEqualTo(3);
     }
 }

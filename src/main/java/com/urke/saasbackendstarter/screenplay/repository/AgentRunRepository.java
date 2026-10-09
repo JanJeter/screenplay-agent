@@ -6,6 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 
 public interface AgentRunRepository extends JpaRepository<AgentRun, String> {
+    @org.springframework.data.jpa.repository.Query("select r from AgentRun r where r.session.organization.id = :org "
+            + "and (:status is null or r.status = :status) and (:type is null or r.session.taskType = :type)")
+    org.springframework.data.domain.Page<AgentRun> searchForAdmin(
+            @org.springframework.data.repository.query.Param("org") Long organizationId,
+            @org.springframework.data.repository.query.Param("status") com.urke.saasbackendstarter.screenplay.domain.AgentRunStatus status,
+            @org.springframework.data.repository.query.Param("type") com.urke.saasbackendstarter.screenplay.domain.AgentTaskType taskType,
+            org.springframework.data.domain.Pageable pageable);
+    java.util.Optional<AgentRun> findByIdAndSessionOrganizationId(String id, Long organizationId);
+    java.util.List<AgentRun> findAllBySessionOrganizationId(Long organizationId);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select run from AgentRun run where run.id = :id")
     java.util.Optional<AgentRun> findLockedById(@org.springframework.data.repository.query.Param("id") String id);

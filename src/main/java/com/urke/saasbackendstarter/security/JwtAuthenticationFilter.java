@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import io.jsonwebtoken.JwtException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Filter that authenticates HTTP requests using JWT tokens.
@@ -39,19 +41,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         String email = null;
 
-        if (header != null && header.startsWith("Bearer ")) {
-            token = header.substring(7);
-            email = jwtTokenProvider.getEmailFromToken(token);
-        }
-
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            if (jwtTokenProvider.validateToken(token, userDetails)) {
+        try {
+            if (header != null && header.startsWith("Bearer ")) {
+                token = header.substring(7);
+                email = jwtTokenProvider.getEmailFromToken(token);
+            }
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                if (!jwtTokenProvider.validateToken(token, userDetails)) {
+                    unauthorized(response);
+                    return;
+                }
                 Authentication auth = jwtTokenProvider.getAuthentication(token, userDetails);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
+        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException error) {
+            unauthorized(response);
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void unauthorized(HttpServletResponse response) throws IOException {
+        SecurityContextHolder.clearContext();
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"code\":\"unauthorized\",\"message\":\"登录已失效，请重新登录。\"}");
     }
 }

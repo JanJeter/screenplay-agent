@@ -1,0 +1,27 @@
+{
+  "label": "03-B",
+  "exportedAt": "2026-10-08T11:11:14.9951792Z",
+  "mode": "postgresql-read-only",
+  "javaRunId": "9b0f71b0-07bf-4bfb-850d-9f9de08cfd80",
+  "storyboardId": "be29bb7c-28fc-4d0c-9232-2af921ed1784",
+  "javaRunStatusPreserved": "failed",
+  "javaErrorCodePreserved": "gateway_failed",
+  "savedShotCount": 4,
+  "successfulSaveEventSequence": 70,
+  "finalReceiptSequences": "73-176",
+  "files": {
+    "storyboard": "03-B.java-storyboard.readonly-recovered.json",
+    "events": "03-B.agent-events.readonly-recovered.json",
+    "saveEvents": "03-B.save-events.readonly-recovered.json",
+    "finalReceipt": "03-B.final-model-receipt.readonly-recovered.txt",
+    "humanEvaluation": "03-B.HUMAN_EVALUATION_SUPPLEMENT.md"
+  },
+  "sha256": {
+    "storyboard": "6206045096DEDD65A42EB937EF97F9931F48EB6B9F876760EC07F4D58F07D5F1",
+    "events": "841DBBB4A4A488BD3B9541E368FD1A59BD7E700B516F76D89643EC1CE87A5803",
+    "saveEvents": "7E50B16086C5B9A3AC351D9317913EAF14BAAEF13C9B17C39783FEDE726B71CA",
+    "finalReceipt": "BE89FFC49A0897CA2B6D5D571A55A46398D119C7E7D878A00C763D14D0C924C8",
+    "humanEvaluation": "643D5E7827CE565010E436F43F8D9DAAA5250C6B18F3027AB74D7FCFBC6505FF"
+  },
+  "providerRequestsSent": 0
+}

@@ -10,7 +10,9 @@
 | mock HTTP | Java、Node、PostgreSQL 和浏览器的确定性技术闭环；Gateway 使用 `AGENT_MODE=mock` | 否。SB-11 已用此模式验证流程和异常，不证明模型质量。 |
 | live HTTP | Java 保存产物、Gateway 真实 provider、工作台浏览器 | 是，但仅在 SB-12 的真实质量/预算门槛通过后可开始。 |
 
-当前状态：SB-11 工程闭环已通过复验（含真实 PostgreSQL、Java→Gateway HTTP 与浏览器；Gateway 为 `AGENT_MODE=mock`）。完整验收命令和 R1～R8 证据见 `REPAIR_ACCEPTANCE.md`。SB-12 的 01-A、01-B 已 completed，01-8-A 在保存八镜后因最终回执格式 failed，批次已停止。累计 3 run / 9 provider requests / 0 retry，配置费率计入 USD 0.007482360，余额 USD 0.992517640；后五项未提交。不得重跑已提交样本或从 01-A 旧余额重新启动七项。
+当前状态：SB-11 工程闭环已通过复验（含真实 PostgreSQL、Java→Gateway HTTP 与浏览器；Gateway 为 `AGENT_MODE=mock`）。完整验收命令和 R1～R8 证据见 `REPAIR_ACCEPTANCE.md`。SB-12 的八项真实 run 已全部终态：01-A、01-B、01-8-B、02-A、02-B、03-A 为 completed；01-8-A、03-B 保持 failed。累计 **8 / 8 business runs、25 provider requests、0 retry、USD 0.021636012 已计、USD 0 预留、USD 0.978363988 余额**。业务次数上限已耗尽，任何真实 SB-12 启动器均不得再运行、恢复或重跑。SB-12 仅处于运行后收尾：待 D 技术复验、真人逐镜评价与供应商扣款对账，不能宣布整体通过。
+
+03-B 的真人材料须使用 [v2 已保存实体评价包](quality-runs/20261008/03-B/03-B.HUMAN_EVALUATION_SUPPLEMENT.v2.md)，并先阅读其 [v2 生成记录](quality-runs/20261008/03-B/03-B.human-evaluation-v2-record.json)：该包明确其原 Java run 仍为 `failed / gateway_failed`，只允许评价已保存的 4 镜实体；旧 `03-B.HUMAN_EVALUATION_SUPPLEMENT.md` 因 Markdown 控制字符问题保留存档但不得用于评价。
 
 ## 运行前检查
 
@@ -89,9 +91,11 @@ Set-Location D:\desktop\screenplay-agent-backend
 
 编码修复的无费用回归命令为 `./scripts/verify-sb12-postgres-json.ps1`，使用现有隔离 PostgreSQL 容器，只执行只读 SELECT。覆盖 UTF-8 / GBK 下中文、引号、反斜杠、换行及长文本完整性，以及空记录、多记录、SQL 错误、非法 JSON / runId 的拒绝；不启动服务、不修改数据库或证据、不请求模型。
 
-### SB-12 后五项的受控承接（当前有效入口）
+### 历史记录：SB-12 后五项的受控承接（已终态，禁止执行）
 
-当前累计为 **3 run / 9 provider requests / 0 retry / USD 0.007482360**，余额 **USD 0.992517640**，未结预留为 `0`。`01-A`、`01-B` 已 completed；`01-8-A` 必须保持 failed 且不重跑。当前唯一可提交的顺序是 `01-8-B → 02-A → 02-B → 03-A → 03-B`。
+> **历史命令警示：** 以下段落仅解释 2026-10-08 真实执行前的控制措施。FinalFive 已提交并全部终态，固定批次状态已记录；不得使用本节任意命令启动、恢复、验证后再提交，或试图以新日期/输出目录绕过。当前补证只能使用 `scripts/export-sb12-03b-supplement.ps1` 的只读 PostgreSQL 导出，且它不发送 provider 请求。
+
+执行前当时的累计为 **3 run / 9 provider requests / 0 retry / USD 0.007482360**，余额 **USD 0.992517640**，未结预留为 `0`。当时 `01-A`、`01-B` 已 completed；`01-8-A` 保持 failed 且不重跑；当时计划的唯一可提交顺序是 `01-8-B → 02-A → 02-B → 03-A → 03-B`。这些数字和命令已被页首的八项终态替代。
 
 先由 D 完成 [后五项复验单](SB12_FINAL_FIVE_REVIEW.md)，并将其中唯一授权行改为 `后五项继续执行授权：APPROVED`。未获此独立授权时，下面的入口会在创建服务或提交请求前停止。授权后，在原本已配置 `DEEPSEEK_API_KEY` 的 PowerShell 7 窗口运行：
 
@@ -105,7 +109,29 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 
 该入口使用新的 `15435/18083/13004` PostgreSQL/Java/Gateway 端口与 `screenplay-sb12-final-five-postgres` 容器，会启动当前含单一 JSON 代码块回执兼容修复的 Gateway 源码。它从 `01-8-A` 最新终态账本承接预算，同时核对 `remaining-batch/batch-summary.json` 的 9 次累计请求；任一已存在的后五项证据目录、端口/容器冲突、预算不一致、失败、超时或导出异常都会停止，不能重试或清零。
 
-真实提交前可运行无费用入口验证：`pwsh -NoProfile -File .\scripts\verify-sb12-final-five-entry.ps1`。它会测试 D 授权闸门、预算承接、严格回执修复、重复证据拒绝和空白人工逐镜评价模板，且不会启动服务或请求模型。
+跨日期防重不依赖当天输出目录：启动器固定使用 `quality-runs/SB12_FIXED_EIGHT_BATCH/` 中的 `SB12-FIXED-EIGHT-20261007` 身份、持久状态和 `batch-execution.lock`。它扫描完整 `quality-runs/` 历史；只要任一后五项出现提交标记、accepted、Java run、provider ledger 或持久状态中的 `unknown/submitted`，就拒绝再次以 01-8-A 账本执行完整五项。更换 `EvidenceRootOverride` 不能改变这一检查；实际执行也不允许覆盖批次状态或历史根路径。相同批次的第二个进程无法取得锁。
+
+只有 `run-sb12-final-five-live.ps1` 仍可成为真实提交入口。`run-sb12-01a-live.ps1` 已退役，因 01-A 已完成；`run-sb12-remaining-live.ps1` 的默认 `RemainingSeven` 同样退役，因其旧的 01-A 承接会重放已执行的 01-B 和 01-8-A。两者均在读取密钥、创建日期目录或启动服务前拒绝。FinalFive 在取得固定排他锁后才读取固定状态与完整历史；状态写入顺序为 `not-submitted → unknown → submitted → terminal`，任何非 `not-submitted` 状态都必须人工核对，不能自动重发。
+
+若 FinalFive 仅在 `fresh-startup` 预检阶段失败（例如 JDK 17 被拒绝），可保留该失败记录并使用一次安全准备恢复；它只接受没有 `submission-marker`、accepted、Java run、provider ledger 或任何后五项目录的现场。先执行：
+
+```powershell
+& 'C:\Users\tcf\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' `
+  -NoProfile -File .\scripts\run-sb12-final-five-live.ps1 -ResumePreparedBatch -ResumeCheckOnly
+```
+
+仅当输出 `FinalFive preparation-resume checks passed` 后，设置 JDK 21 并实际恢复：
+
+```powershell
+$env:JAVA_HOME = 'C:\Users\tcf\.jdks\ms-21.0.9'
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+& 'C:\Users\tcf\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' `
+  -NoProfile -File .\scripts\run-sb12-final-five-live.ps1 -ResumePreparedBatch
+```
+
+该恢复会重新执行启动前检查、构建和服务启动，但不删除原失败记录；一旦现场含任何提交或终态证据则拒绝恢复，不能用于重发已提交 run。
+
+真实提交前可运行无费用入口验证：`pwsh -NoProfile -File .\scripts\verify-sb12-final-five-entry.ps1`。它会调用生产状态写入函数并重新读取 `not-submitted → unknown → submitted → terminal`，测试 D 授权闸门、首次合法入口、预算承接、严格回执修复、同日和跨日防重、未知提交拒绝、输出目录不可绕过、历史入口退役、排他锁和空白人工逐镜评价模板，且不会启动服务或请求模型。
 
 ### 历史说明：SB-12 剩余七项的首次承接
 

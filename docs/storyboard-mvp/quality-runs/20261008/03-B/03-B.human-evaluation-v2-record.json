@@ -1,0 +1,33 @@
+{
+  "label": "03-B",
+  "generatedAt": "2026-10-08T11:41:46.4261765Z",
+  "mode": "offline-saved-json-only",
+  "providerRequestsSent": 0,
+  "replacement": {
+    "supersedes": "03-B.HUMAN_EVALUATION_SUPPLEMENT.md",
+    "replacement": "03-B.HUMAN_EVALUATION_SUPPLEMENT.v2.md",
+    "reason": "PowerShell backtick escaping corrupted the prior Markdown status and source-scene fence."
+  },
+  "source": {
+    "path": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\03-B\\03-B.java-storyboard.readonly-recovered.json",
+    "sha256": "6206045096DEDD65A42EB937EF97F9931F48EB6B9F876760EC07F4D58F07D5F1",
+    "storyboardId": "be29bb7c-28fc-4d0c-9232-2af921ed1784",
+    "sourceRunId": "9b0f71b0-07bf-4bfb-850d-9f9de08cfd80"
+  },
+  "output": {
+    "path": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\03-B\\03-B.HUMAN_EVALUATION_SUPPLEMENT.v2.md",
+    "sha256": "EFC79664D513D69D378A2E8F02852634953FC42A9720AD69593D0E9C01DBEE2D"
+  },
+  "javaRunStatusPreserved": "failed",
+  "javaErrorCodePreserved": "gateway_failed",
+  "savedShotCount": 4,
+  "validation": {
+    "noUnexpectedControlCharacters": true,
+    "failedStatusLiteral": true,
+    "sourceFencePair": true,
+    "sourceSceneMatchesJson": true,
+    "fourShotsCompleteAndOrdered": true,
+    "blankHumanEvaluationRows": true,
+    "markdownPreviewFenceGuard": true
+  }
+}

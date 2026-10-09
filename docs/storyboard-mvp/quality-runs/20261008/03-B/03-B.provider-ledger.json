@@ -1,0 +1,118 @@
+{
+  "runId": "ea19a78d-6f3c-4d92-9dbf-bc114de649db",
+  "status": "failed",
+  "providerRequests": [
+    {
+      "sequence": 1,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:38.804Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 4166,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.000115512,
+      "endedAt": "2026-10-08T10:46:39.613Z",
+      "durationMs": 809,
+      "actualUsage": {
+        "input": 226,
+        "output": 34,
+        "cacheRead": 1152,
+        "cacheWrite": 0,
+        "totalTokens": 1412
+      },
+      "actualCostUsd": 0.000115512
+    },
+    {
+      "sequence": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:39.622Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 5737,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.0015048480000000003,
+      "endedAt": "2026-10-08T10:46:46.139Z",
+      "durationMs": 6517,
+      "actualUsage": {
+        "input": 228,
+        "output": 1190,
+        "cacheRead": 1408,
+        "cacheWrite": 0,
+        "totalTokens": 2826
+      },
+      "actualCostUsd": 0.0015048480000000003
+    },
+    {
+      "sequence": 3,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:46.146Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 16165,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.002131056,
+      "endedAt": "2026-10-08T10:46:50.406Z",
+      "durationMs": 4260,
+      "actualUsage": {
+        "input": 1976,
+        "output": 1271,
+        "cacheRead": 2176,
+        "cacheWrite": 0,
+        "totalTokens": 5423
+      },
+      "actualCostUsd": 0.002131056
+    },
+    {
+      "sequence": 4,
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "startedAt": "2026-10-08T10:46:50.437Z",
+      "status": "completed",
+      "retryPolicy": {
+        "maxRetries": 0,
+        "retries": 0
+      },
+      "contextBytes": 21916,
+      "inputTokenReserve": 50000,
+      "outputTokenLimit": 8192,
+      "reservedCostUsd": 0.024830400000000002,
+      "chargedCostUsd": 0.00020145599999999998,
+      "endedAt": "2026-10-08T10:46:51.343Z",
+      "durationMs": 906,
+      "actualUsage": {
+        "input": 148,
+        "output": 104,
+        "cacheRead": 5376,
+        "cacheWrite": 0,
+        "totalTokens": 5628
+      },
+      "actualCostUsd": 0.00020145599999999998
+    }
+  ],
+  "budget": {
+    "businessRuns": 8,
+    "businessRunCap": 8,
+    "chargedUsd": 0.021636012000000003,
+    "reservedUsd": 0,
+    "remainingUsd": 0.978363988,
+    "capUsd": 1
+  }
+}

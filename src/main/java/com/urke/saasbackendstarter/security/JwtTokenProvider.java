@@ -32,6 +32,7 @@ public class JwtTokenProvider {
         Date expiry = new Date(now.getTime() + expirationMs);
         return Jwts.builder()
                 .subject(userDetails.getUsername())
+                .claim("ver", userDetails instanceof CustomUserDetails custom ? custom.getUser().getTokenVersion() : 0)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getKey())
@@ -49,11 +50,7 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
-        } catch (ExpiredJwtException ex) {
-            throw new RuntimeException("JWT expired", ex);
-        } catch (JwtException ex) {
-            throw new RuntimeException("JWT invalid", ex);
-        }
+        } catch (JwtException ex) { throw ex; }
     }
 
     /**
@@ -61,8 +58,12 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
-            final String username = getEmailFromToken(token);
-            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            Claims claims = Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token).getPayload();
+            Object versionClaim = claims.get("ver");
+            long version = versionClaim == null ? 0 : versionClaim instanceof Number number ? number.longValue() : -1;
+            long currentVersion = userDetails instanceof CustomUserDetails custom ? custom.getUser().getTokenVersion() : 0;
+            return userDetails.isEnabled() && version == currentVersion
+                    && claims.getSubject().equalsIgnoreCase(userDetails.getUsername()) && claims.getExpiration().after(new Date());
         } catch (JwtException ex) {
             return false;
         }

@@ -4,21 +4,22 @@ import { fauxAssistantMessage, fauxProvider, fauxToolCall } from "@earendil-work
 import { createScreenplayTools, type SessionScope } from "./tools.ts";
 import { createStoryboardTools } from "./storyboard-tools.ts";
 import {
-  hasEquivalentSavedStoryboardAcknowledgement,
-  parseSavedStoryboardAcknowledgement,
+  validateSavedStoryboardAcknowledgement,
   type EditableShot,
   type StoryboardContext,
   type StoryboardResult,
+  type SourceQuoteChoice,
+  type StoryboardFailureCode,
 } from "./storyboard-schema.ts";
 import { hasValidProfileResult, isStoryboardTaskType, profileFor } from "./profiles.ts";
-import { BudgetController, type ProviderRequestLedgerEntry } from "./budget.ts";
+import { BudgetController, BudgetExceededError, type BudgetErrorCode, type ProviderRequestLedgerEntry } from "./budget.ts";
 import { selectLiveModel } from "./live-provider.ts";
 
 export function createRuntime(
   scope: SessionScope,
   emit: (type: string, data: Record<string, unknown>) => void,
   budget?: BudgetController,
-): { agent: Agent; prepareRun: () => void; hasValidStructuredResult: () => boolean; getProviderLedger: () => ProviderRequestLedgerEntry[] } {
+): { agent: Agent; prepareRun: (runId?: string) => void; finishRun: () => void; getBudgetFailure: () => BudgetErrorCode | undefined; getStoryboardFailure: () => StoryboardFailureCode | undefined; hasValidStructuredResult: () => boolean; getProviderLedger: () => ProviderRequestLedgerEntry[] } {
   const live = process.env.AGENT_MODE === "live";
   const profile = profileFor(scope.taskType);
   // A separate faux queue and model registry per session prevents cross-session leakage.
@@ -33,6 +34,12 @@ export function createRuntime(
   let requestSequence = 0;
   let requestLedger: ProviderRequestLedgerEntry[] = [];
   const pendingRequests: ProviderRequestLedgerEntry[] = [];
+  let budgetFailure: BudgetErrorCode | undefined;
+  let storyboardFailure: StoryboardFailureCode | undefined;
+  function account<T>(action: () => T): T {
+    try { return action(); }
+    catch (error) { if (error instanceof BudgetExceededError) budgetFailure = error.code; throw error; }
+  }
   const agent = new Agent({
     sessionId: scope.sessionId,
     toolExecution: "sequential",
@@ -55,16 +62,17 @@ export function createRuntime(
         "只提供适合向用户展示的结论、简短计划和创作内容；不要输出内部思维链。",
         `当前任务 profile：${profile.id}。${profile.resultContract}`,
       ].join("\n"),
-      tools: isStoryboardTaskType(profile.id) ? createStoryboardTools(scope) : createScreenplayTools(scope),
+      tools: isStoryboardTaskType(profile.id) ? createStoryboardTools(scope, code => { storyboardFailure = code; }) : createScreenplayTools(scope),
     },
     streamFn: (requestedModel, context, options) => {
       let entry: ProviderRequestLedgerEntry | undefined;
       if (budget) {
-        if (!activeRunId) throw new Error("SB-12 budget ledger requires an active Gateway run");
-        entry = budget.reserve({
+        if (!activeRunId) throw new Error("Budget ledger requires an active Gateway run");
+        entry = account(() => budget.reserve({
+          runId: activeRunId,
           sequence: ++requestSequence, provider: requestedModel.provider, model: requestedModel.id,
           contextBytes: Buffer.byteLength(JSON.stringify(context), "utf8"), outputTokenLimit: profile.maxOutputTokens ?? 2048,
-        });
+        }));
         requestLedger.push(entry);
         pendingRequests.push(entry);
         emit("provider.request_started", {
@@ -76,13 +84,13 @@ export function createRuntime(
         return models.streamSimple(requestedModel, context, {
           ...options, maxTokens: profile.maxOutputTokens ?? 2048, maxRetries: 0,
           onResponse: async (response, responseModel) => {
-            if (entry) budget?.recordResponse(entry, response.headers);
+            if (entry) account(() => budget?.recordResponse(entry!, response.headers));
             await options?.onResponse?.(response, responseModel);
           },
         });
       } catch (error) {
         if (entry) {
-          budget?.fail(entry, error instanceof Error ? error.message : "provider stream setup failed");
+          account(() => budget?.fail(entry!, error instanceof Error ? error.message : "provider stream setup failed"));
           emit("provider.request_failed", { sequence: entry.sequence, chargedCostUsd: entry.chargedCostUsd, reason: entry.failureReason });
         }
         throw error;
@@ -110,19 +118,27 @@ export function createRuntime(
     } else if (event.type === "tool_execution_update") {
       emit("status", { stage: "tool_running", name: event.toolName, toolCallId: event.toolCallId });
     } else if (event.type === "tool_execution_end") {
-      emit("tool.completed", { toolCallId: event.toolCallId, name: event.toolName, isError: event.isError });
+      if (event.toolName === "save_storyboard_result" && event.isError) {
+        storyboardFailure ??= "storyboard_result_invalid";
+        // Stop after the first failed save, before Pi can spend another model
+        // request blindly rewriting the payload or explaining the same error.
+        agent.abort();
+      }
+      emit("tool.completed", { toolCallId: event.toolCallId, name: event.toolName, isError: event.isError,
+        ...(event.isError && storyboardFailure ? { code: storyboardFailure } : {}) });
     } else if (event.type === "message_end" && event.message.role === "assistant") {
       const usage = event.message.usage;
       emit("usage", { input: usage.input, output: usage.output, totalTokens: usage.totalTokens });
       const entry = pendingRequests.shift();
       if (entry) {
         if (event.message.stopReason === "error" || event.message.stopReason === "aborted") {
-          budget?.fail(entry, event.message.errorMessage ?? event.message.stopReason);
+          const reason = event.message.errorMessage ?? event.message.stopReason;
+          account(() => budget?.fail(entry, reason));
           emit("provider.request_failed", {
             sequence: entry.sequence, chargedCostUsd: entry.chargedCostUsd, reason: entry.failureReason,
           });
         } else {
-          budget?.complete(entry, usage);
+          account(() => budget?.complete(entry, usage));
           if (entry.status === "failed") {
             emit("provider.request_failed", {
               sequence: entry.sequence, chargedCostUsd: entry.chargedCostUsd, reason: entry.failureReason,
@@ -140,9 +156,11 @@ export function createRuntime(
 
   return {
     agent,
-    prepareRun() {
+    prepareRun(runId?: string) {
       toolCalls = 0;
-      activeRunId = scope.applicationRunId;
+      activeRunId = scope.applicationRunId ?? runId;
+      budgetFailure = undefined;
+      storyboardFailure = undefined;
       requestSequence = 0;
       requestLedger = [];
       pendingRequests.length = 0;
@@ -163,8 +181,15 @@ export function createRuntime(
           : JSON.stringify(result));
       }]);
     },
+    finishRun() {
+      for (const entry of pendingRequests.splice(0)) {
+        if (entry.status === "reserved") account(() => budget?.fail(entry, "Run ended before provider usage was recorded; charged full reservation"));
+      }
+    },
+    getBudgetFailure() { return budgetFailure; },
+    getStoryboardFailure() { return storyboardFailure; },
     hasValidStructuredResult() {
-      if (isStoryboardTaskType(profile.id)) return hasSavedStoryboardAcknowledgement(agent.state.messages);
+      if (isStoryboardTaskType(profile.id)) return hasVerifiedSavedStoryboardResult(agent.state.messages);
       if (profile.requiredResultKeys.length === 0) return true;
       const last = agent.state.messages.at(-1) as unknown as { role?: string; content?: unknown } | undefined;
       if (!last || last.role !== "assistant") return false;
@@ -214,15 +239,16 @@ function latestSuccessfulToolResult(context: unknown, toolName: string): unknown
   throw new Error(`Mock flow did not receive a successful ${toolName} result`);
 }
 
-function mockStoryboardResult(context: StoryboardContext): StoryboardResult {
+function mockStoryboardResult(context: StoryboardContext & { sourceQuotes?: SourceQuoteChoice[] }): StoryboardResult {
   if (context.mode === "rewrite") {
-    return { mode: "rewrite", proposalShot: { ...context.targetShot, cameraMovement: "STATIC", visualDescription: "许晴在茶几前拿起未拆的信，克制地看着林舟，保持原地。" } };
+    return { mode: "rewrite", proposalShot: { ...context.targetShot, cameraMovement: "STATIC", visualDescription: "[Mock 流程测试] 许晴在茶几前拿起未拆的信，克制地看着林舟，保持原地。" } };
   }
-  const quote = context.sourceSnapshot.sceneText.slice(0, Math.min(context.sourceSnapshot.sceneText.length, 200)).trim();
+  const quote = context.sourceQuotes?.[0]?.text
+    ?? context.sourceSnapshot.sceneText.slice(0, Math.min(context.sourceSnapshot.sceneText.length, 200)).trim();
   const shots: EditableShot[] = Array.from({ length: context.targetShotCount }, (_, index) => ({
     shotSize: index === 0 ? "ESTABLISHING" : "MEDIUM",
     cameraMovement: index === 0 ? "STATIC" : "DOLLY_IN",
-    visualDescription: `来源场景的第 ${index + 1} 个叙事节拍，保持人物、动作和道具状态连续。`,
+    visualDescription: `[Mock 流程测试] 来源场景的第 ${index + 1} 个叙事节拍，保持人物、动作和道具状态连续。`,
     dialogue: "", sound: "场景环境声。", durationSeconds: 4,
     imagePrompt: `单场景电影分镜，第 ${index + 1} 镜，忠于来源场景中的人物、动作与道具状态。`,
     videoPrompt: `4秒，第 ${index + 1} 镜，保持来源场景事实与前后动作连续。`, sourceQuote: quote,
@@ -230,18 +256,22 @@ function mockStoryboardResult(context: StoryboardContext): StoryboardResult {
   return { mode: "generate", shots };
 }
 
-function hasSavedStoryboardAcknowledgement(messages: readonly unknown[]): boolean {
-  const finalMessage = messages.at(-1);
-  if (!finalMessage || typeof finalMessage !== "object" || (finalMessage as { role?: unknown }).role !== "assistant") return false;
-  const content = (finalMessage as { content?: unknown }).content;
-  const finalText = typeof content === "string" ? content : Array.isArray(content)
-    ? content.filter((part): part is { type?: unknown; text?: unknown } => !!part && typeof part === "object")
-      .filter(part => part.type === "text" && typeof part.text === "string").map(part => part.text).join("")
-    : "";
+/**
+ * Completion for a storyboard run is the Java-validated save, not a second
+ * model-authored receipt. `save_storyboard_result` validates the frozen
+ * context, uses the current run's capability token, and validates Java's
+ * `{ artifactId, resultRef }` response before it becomes a successful tool
+ * result. A model may still add prose around its final acknowledgement; that
+ * prose is display-only and must not turn an already persisted result into a
+ * failed business run.
+ *
+ * Keep this exported for the no-network replay of the real 03-B event chain.
+ */
+export function hasVerifiedSavedStoryboardResult(messages: readonly unknown[]): boolean {
   try {
-    const finalValue = parseSavedStoryboardAcknowledgement(finalText);
     const savedValue = latestSuccessfulToolResult({ messages }, "save_storyboard_result");
-    return hasEquivalentSavedStoryboardAcknowledgement(finalValue, savedValue);
+    validateSavedStoryboardAcknowledgement(savedValue);
+    return true;
   } catch { return false; }
 }
 

@@ -62,11 +62,16 @@ export type RewriteStoryboardResult = { mode: "rewrite"; proposalShot: EditableS
 export type StoryboardResult = GenerateStoryboardResult | RewriteStoryboardResult;
 export type StoryboardResultRef = { type: "storyboard" | "shot_proposal"; id: string; storyboardId: string };
 export type SavedStoryboardResult = { artifactId: string; resultRef: StoryboardResultRef };
+export type StoryboardFailureCode = "storyboard_source_quote_invalid" | "storyboard_result_invalid" | "storyboard_save_failed";
+export class StoryboardSourceQuoteError extends Error {
+  constructor() { super("Select a sourceQuoteId returned by get_storyboard_context, or copy one exact source fragment without rewriting or joining it."); this.name = "StoryboardSourceQuoteError"; }
+}
+export type SourceQuoteChoice = { id: string; text: string; start: number; end: number };
 
-// This is the model-facing representation of the frozen
-// model-storyboard-result.schema.json contract. Keep the source-dependent
-// checks below: JSON Schema cannot express quote containment or the requested
-// generate count from the context.
+// The model-facing contract additionally accepts a sourceQuoteId. Resolution
+// converts it back to the unchanged persisted model-storyboard-result contract.
+// Keep source-dependent checks: JSON Schema cannot express quote containment
+// or the requested generate count from the context.
 const shotSizeSchema = Type.Enum([
   "ESTABLISHING", "WIDE", "MEDIUM", "CLOSE_UP", "EXTREME_CLOSE_UP",
 ]);
@@ -82,8 +87,9 @@ const editableShotSchema = Type.Object({
   durationSeconds: Type.Integer({ minimum: 1, maximum: 30 }),
   imagePrompt: Type.String({ minLength: 1, maxLength: 2_000, pattern: ".*\\S.*" }),
   videoPrompt: Type.String({ minLength: 1, maxLength: 2_500, pattern: ".*\\S.*" }),
-  sourceQuote: Type.String({ minLength: 1, maxLength: 500, pattern: ".*\\S.*" }),
-}, { additionalProperties: false });
+  sourceQuoteId: Type.Optional(Type.String({ minLength: 1, maxLength: 80, description: "从 get_storyboard_context.sourceQuotes 选择与本镜动作对应的 id；直接传 id，不改写原文。" })),
+  sourceQuote: Type.Optional(Type.String({ minLength: 1, maxLength: 500, pattern: ".*\\S.*", description: "兼容旧调用：必须逐字复制连续原文，不得总结、拼接或改写。优先仅传 sourceQuoteId。" })),
+}, { additionalProperties: false, anyOf: [{ required: ["sourceQuoteId"] }, { required: ["sourceQuote"] }] });
 
 export const modelStoryboardResultSchema = Type.Union([
   Type.Object({
@@ -103,6 +109,58 @@ export const saveStoryboardResultParameters = Type.Object({
 
 export function normalizeStoryboardText(value: string): string {
   return value.replace(/\r\n?/g, "\n");
+}
+
+/** Deterministic, bounded, non-overlapping slices. Never reconstruct source from model text. */
+export function sourceQuoteChoices(snapshot: SourceSnapshot): SourceQuoteChoice[] {
+  const choices: SourceQuoteChoice[] = [];
+  const text = snapshot.sceneText;
+  for (let offset = 0; offset < text.length;) {
+    let end = Math.min(offset + 240, text.length);
+    if (end < text.length) {
+      const part = text.slice(offset, end);
+      const boundaries = [...part.matchAll(/[。！？!?；;\n]/g)];
+      const boundary = boundaries.at(-1)?.index;
+      if (boundary !== undefined && boundary >= 79) end = offset + boundary + 1;
+      // A UTF-16 range must not split a supplementary character.
+      if (/[\uD800-\uDBFF]/.test(text[end - 1]) && /[\uDC00-\uDFFF]/.test(text[end])) end--;
+    }
+    const raw = text.slice(offset, end);
+    const leading = raw.length - raw.trimStart().length;
+    const trailing = raw.length - raw.trimEnd().length;
+    const start = offset + leading;
+    const finish = end - trailing;
+    if (start < finish) choices.push({ id: `q_${snapshot.sceneHash.slice(0, 12)}_${start}_${finish}`, text: text.slice(start, finish), start, end: finish });
+    offset = end;
+  }
+  return choices;
+}
+
+/** The full frozen snapshot stays private to the adapter; send its text only once to the model. */
+export function modelStoryboardContext(context: StoryboardContext) {
+  const { sceneText: _text, ...sourceSnapshot } = context.sourceSnapshot;
+  return { ...context, sourceSnapshot, sourceQuotes: sourceQuoteChoices(context.sourceSnapshot) };
+}
+
+/** Resolve model-only IDs before the unchanged Java/persisted result contract is validated. */
+export function resolveModelStoryboardResult(value: unknown, context: StoryboardContext): StoryboardResult {
+  expectRecord(value, "Storyboard result");
+  expectByteLimit({ result: value }, STORYBOARD_MAX_RESULT_BYTES, "Storyboard result");
+  const choices = new Map(sourceQuoteChoices(context.sourceSnapshot).map(choice => [choice.id, choice.text]));
+  const resolveShot = (shot: unknown): unknown => {
+    expectRecord(shot, "Storyboard shot");
+    if (!("sourceQuoteId" in shot)) return shot;
+    const quote = typeof shot.sourceQuoteId === "string" ? choices.get(shot.sourceQuoteId) : undefined;
+    if (quote === undefined || ("sourceQuote" in shot && shot.sourceQuote !== quote)) throw new StoryboardSourceQuoteError();
+    const { sourceQuoteId: _id, ...fields } = shot;
+    return { ...fields, sourceQuote: quote };
+  };
+  const resolved = context.mode === "generate" && Array.isArray(value.shots)
+    ? { ...value, shots: value.shots.map(resolveShot) }
+    : context.mode === "rewrite" && value.proposalShot !== undefined
+      ? { ...value, proposalShot: resolveShot(value.proposalShot) }
+      : value;
+  return validateStoryboardResult(resolved, context);
 }
 
 export function validateStoryboardContext(value: unknown): StoryboardContext {
@@ -257,7 +315,7 @@ function validateShotSemantics(shots: EditableShot[], snapshot: SourceSnapshot):
   const totalDuration = shots.reduce((total, shot) => total + shot.durationSeconds, 0);
   if (totalDuration > 240) throw new Error("Storyboard total duration cannot exceed 240 seconds");
   for (const shot of shots) {
-    if (!snapshot.sceneText.includes(shot.sourceQuote)) throw new Error("Storyboard sourceQuote is absent from the frozen source snapshot");
+    if (!snapshot.sceneText.includes(shot.sourceQuote)) throw new StoryboardSourceQuoteError();
   }
 }
 

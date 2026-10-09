@@ -9,7 +9,8 @@
     "storyboard:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/storyboard-contract.ts",
     "preflight": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/preflight.ts",
     "budget:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/budget-contract.ts",
-    "provider:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/provider-contract.ts"
+    "provider:check": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/provider-contract.ts",
+    "sb12:03b-replay": "node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/sb12-03b-receipt-replay.ts"
   },
   "engines": { "node": ">=22.19.0" }
 }

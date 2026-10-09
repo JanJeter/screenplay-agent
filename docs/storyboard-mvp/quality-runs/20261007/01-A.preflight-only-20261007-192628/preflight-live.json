@@ -1,0 +1,12 @@
+{
+  "mode": "live",
+  "provider": "deepseek",
+  "readyForSb12LiveRun": true,
+  "credentialPresence": {
+    "ANTHROPIC_API_KEY": "absent",
+    "ANTHROPIC_OAUTH_TOKEN": "absent",
+    "DEEPSEEK_API_KEY": "present"
+  },
+  "requiredConfiguration": [],
+  "note": "Only presence and validation status are emitted; secret values are never read into output."
+}

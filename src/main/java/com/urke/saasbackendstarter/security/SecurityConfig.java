@@ -67,6 +67,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(org.springframework.security.config.Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((request, response, failure) -> {
+                    response.setStatus(401); response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"code\":\"unauthorized\",\"message\":\"请先登录。\"}");
+                })
+                .accessDeniedHandler((request, response, failure) -> {
+                    response.setStatus(403); response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"code\":\"forbidden\",\"message\":\"没有此操作权限。\"}");
+                }))
             .authorizeHttpRequests(auth -> auth
                 // SseEmitter completion/re-dispatches do not reliably carry the original
                 // JWT through every servlet container. The initial REQUEST remains fully
@@ -77,7 +86,10 @@ public class SecurityConfig {
                         new AntPathRequestMatcher("/api/v1/screenplay/agent/runs/*/events"))).permitAll()
                 .requestMatchers(
                     "/api/v1/users/register",
-                    "/api/v1/auth/**",
+                    "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/register",
+                    "/api/v1/auth/verify-email", "/api/v1/auth/resend-verification",
+                    "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password",
+                    "/api/v1/auth/password-reset/request", "/api/v1/auth/password-reset/confirm",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
@@ -103,7 +115,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Last-Event-ID", "Accept"));
         configuration.setExposedHeaders(List.of("Content-Disposition"));
         configuration.setAllowCredentials(false);

@@ -1,0 +1,47 @@
+{
+  "carryover": {
+    "sourceRunId": "05d93636-7cf1-43db-beed-3dd2047291af",
+    "sourceTraceId": "5f37a648-5ab3-4238-a683-3c9f5ac4c885",
+    "initialBusinessRuns": 1,
+    "initialChargedUsd": 0.002657148,
+    "initialProviderRequests": 3,
+    "importedAt": "2026-10-07T12:19:55.1464953Z",
+    "acceptanceSha256": "916B46B2B7BFC9E3BD4ADD4AB5A20362E851CA9BD9BFD22E928CD9177E5AD1EE",
+    "ledgerSha256": "7A6301ADFABE4D43CE5D6F4618878C90DCB9E33B5259D6E356112759D09804D9"
+  },
+  "completed": [
+    {
+      "label": "01-B",
+      "javaRunId": "4855bf05-843f-4b07-99b7-99de8105e3ac",
+      "gatewayRunId": "1eed782e-f149-41ec-bd9e-dc83802919fe",
+      "traceId": "551cf55e-ef47-4abc-af5e-5e7ad32a0e37",
+      "status": "completed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "7abd1704-7b07-439d-9cc8-502af7bed8bb",
+        "storyboardId": "7abd1704-7b07-439d-9cc8-502af7bed8bb"
+      },
+      "providerRequests": 3,
+      "retries": 0.0,
+      "chargedUsd": 0.004878431999999999,
+      "remainingUsd": 0.995121568
+    },
+    {
+      "label": "01-8-A",
+      "javaRunId": "ef36082d-5384-4a03-84b8-9df16d692398",
+      "gatewayRunId": "669e7699-c2f4-4f07-9c30-35817fc2413c",
+      "traceId": "1a00fd13-e61d-4ab9-bb25-854245ce9a37",
+      "status": "failed",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "a55499c7-a9aa-452e-9ad9-12266c65e219",
+        "storyboardId": "a55499c7-a9aa-452e-9ad9-12266c65e219"
+      },
+      "providerRequests": 3,
+      "retries": 0.0,
+      "chargedUsd": 0.0074823599999999995,
+      "remainingUsd": 0.99251764
+    }
+  ],
+  "updatedAt": "2026-10-07T12:39:53.9343262Z"
+}

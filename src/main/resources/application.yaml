@@ -4,6 +4,14 @@
 # =========================
 
 spring:
+  mail:
+    properties:
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
   sql:
     init:
       # Runs the idempotent PostgreSQL compatibility migration before JPA validates/updates mappings.
@@ -32,6 +40,16 @@ jwt:
   secret: ${JWT_SECRET:super-secret-key-that-is-very-long-and-random-for-jwt-signing-123456789}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
   refresh-token-duration-ms: ${JWT_REFRESH_TOKEN_DURATION_MS:604800000}
+
+auth:
+  registration-organization-id: ${AUTH_REGISTRATION_ORGANIZATION_ID:0}
+  registration-organization-slug: ${AUTH_REGISTRATION_ORGANIZATION_SLUG:demo-org}
+  frontend-base-url: ${AUTH_FRONTEND_BASE_URL:http://127.0.0.1:5174}
+  demo-seed-enabled: ${AUTH_DEMO_SEED_ENABLED:false}
+  mail:
+    mode: ${AUTH_MAIL_MODE:local}
+    local-directory: ${AUTH_LOCAL_MAIL_DIR:.local/workbench-dev/mail}
+    from: ${AUTH_MAIL_FROM:}
 
 # Credentials used only by the Agent Gateway when it calls the internal
 # screenplay adapters.  This is deliberately separate from browser JWTs.

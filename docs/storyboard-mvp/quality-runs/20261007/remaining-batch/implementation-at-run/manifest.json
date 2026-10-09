@@ -1,0 +1,32 @@
+[
+  {
+    "source": "src\\runtime.ts",
+    "sha256": "8004FDD1D8D4FD528ACA3188339D52D17955490E79E81CB9E99457AAA4DC749C",
+    "savedAs": "src_runtime.ts",
+    "recoveredAfterExecution": true
+  },
+  {
+    "source": "src\\profiles.ts",
+    "sha256": "BA063F85FB517AA990770AD3E999B641E138BB245EC62F23E55502DA1AE57DB6",
+    "savedAs": "src_profiles.ts",
+    "recoveredAfterExecution": true
+  },
+  {
+    "source": "src\\storyboard-tools.ts",
+    "sha256": "8BDAB9EF8CF6FB97DAACD5D16600125BCC9595C8E0BC1C7D637FCDC6674ECD81",
+    "savedAs": "src_storyboard-tools.ts",
+    "recoveredAfterExecution": true
+  },
+  {
+    "source": "src\\storyboard-schema.ts",
+    "sha256": "655995A68EC056DABB08F6F9047E3BC7AE43F58D8DDFAC7D900DE22480DDEA25",
+    "savedAs": "src_storyboard-schema.ts",
+    "recoveredAfterExecution": true
+  },
+  {
+    "source": "src\\budget.ts",
+    "sha256": "62CF84C359544EBC392E2B1ECDAC8146089CAE939C19EED48F3E5E081BD29252",
+    "savedAs": "src_budget.ts",
+    "recoveredAfterExecution": true
+  }
+]

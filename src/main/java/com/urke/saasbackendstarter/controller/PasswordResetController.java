@@ -4,7 +4,7 @@ import com.urke.saasbackendstarter.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -30,6 +30,7 @@ public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;
     private final MessageSource messageSource;
+    private final org.springframework.beans.factory.ObjectProvider<com.urke.saasbackendstarter.service.AccountRateLimiter> accountLimits;
 
     /**
      * Request password reset instructions for a given email.
@@ -38,7 +39,7 @@ public class PasswordResetController {
     @Operation(
         summary = "Request password reset",
         description = "Send password reset instructions to the given email if a user exists. Always returns a generic message for security.",
-        requestBody = @RequestBody(
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Email address for which to request password reset",
             required = true
         ),
@@ -48,7 +49,8 @@ public class PasswordResetController {
         }
     )
     @PostMapping("/request")
-    public ResponseEntity<String> requestReset(@Valid @RequestBody RequestResetDto dto, Locale locale) {
+    public ResponseEntity<String> requestReset(@Valid @RequestBody RequestResetDto dto, Locale locale, jakarta.servlet.http.HttpServletRequest http) {
+        accountLimits.getObject().check("account-ip:" + http.getRemoteAddr(), 0, 60);
         passwordResetService.createResetToken(dto.getEmail());
         String msg = messageSource.getMessage("reset.instructions.sent", null, locale);
         return ResponseEntity.ok().body(msg);
@@ -60,7 +62,7 @@ public class PasswordResetController {
     @Operation(
         summary = "Confirm password reset",
         description = "Reset the user's password using a valid reset token and new password.",
-        requestBody = @RequestBody(
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Reset token and new password",
             required = true
         ),
@@ -70,7 +72,8 @@ public class PasswordResetController {
         }
     )
     @PostMapping("/confirm")
-    public ResponseEntity<String> confirmReset(@Valid @RequestBody ConfirmResetDto dto, Locale locale) {
+    public ResponseEntity<String> confirmReset(@Valid @RequestBody ConfirmResetDto dto, Locale locale, jakarta.servlet.http.HttpServletRequest http) {
+        accountLimits.getObject().check("account-ip:" + http.getRemoteAddr(), 0, 60);
         passwordResetService.resetPassword(dto.getToken(), dto.getNewPassword());
         String msg = messageSource.getMessage("password.reset.success", null, locale);
         return ResponseEntity.ok().body(msg);
@@ -94,6 +97,7 @@ public class PasswordResetController {
         @NotBlank
         private String token;
         @NotBlank
+        @jakarta.validation.constraints.Size(min = 8, max = 64)
         private String newPassword;
     }
 }

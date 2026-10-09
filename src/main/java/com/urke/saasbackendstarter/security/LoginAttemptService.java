@@ -30,9 +30,8 @@ public class LoginAttemptService {
      * Should be called on failed login. Increments attempt counter and applies block if threshold is reached.
      */
     public void loginFailed(String email) {
-        int current = attempts.getOrDefault(email, 0);
-        attempts.put(email, current + 1);
-        if (attempts.get(email) >= MAX_ATTEMPTS) {
+        int current = attempts.merge(email, 1, Integer::sum);
+        if (current >= MAX_ATTEMPTS) {
             blockedUntil.put(email, Instant.now().toEpochMilli() + BLOCK_DURATION_MS);
         }
     }

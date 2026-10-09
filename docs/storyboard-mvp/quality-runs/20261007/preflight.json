@@ -1,0 +1,82 @@
+{
+  "evidenceType": "sb12-preflight",
+  "executedAt": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "workspace": "D:\\desktop\\screenplay-agent-backend",
+  "outcome": "BLOCKED",
+  "realProviderCalls": 0,
+  "businessGenerationRuns": 0,
+  "providerRequests": 0,
+  "retries": 0,
+  "costUsd": 0,
+  "environmentPresenceOnly": {
+    "AGENT_MODE": "absent",
+    "JAVA_MODE": "absent",
+    "PI_MODEL": "absent",
+    "ANTHROPIC_API_KEY": "absent",
+    "ANTHROPIC_OAUTH_TOKEN": "absent",
+    "ANTHROPIC_BASE_URL": "absent",
+    "ANTHROPIC_API_URL": "absent",
+    "JAVA_BASE_URL": "absent",
+    "AGENT_GATEWAY_TOKEN": "absent",
+    "AGENT_EXECUTION_SECRET": "absent",
+    "VITE_STORYBOARD_DATA_SOURCE": "absent"
+  },
+  "runtimeState": {
+    "listeningPorts": {
+      "3001": "closed",
+      "8080": "closed",
+      "13001": "closed",
+      "18080": "closed",
+      "5173": "closed",
+      "15173": "closed"
+    },
+    "webEnvFiles": ["apps/storyboard-web/.env.example (example only; its fixture value is not auto-loaded by Vite)"],
+    "gatewayEnvFiles": [],
+    "fixtureEnabled": "not enabled in this process; no running frontend exists to verify"
+  },
+  "supportedLiveProvider": {
+    "name": "Anthropic",
+    "implementation": "examples/pi-agent-gateway/src/runtime.ts imports and registers anthropicProvider() when AGENT_MODE=live",
+    "otherProvidersAdded": false
+  },
+  "frozenBaseline": {
+    "taskType": "generate_storyboard",
+    "model": "unavailable: PI_MODEL is absent",
+    "agentMode": "unavailable: AGENT_MODE is absent",
+    "javaMode": "unavailable: JAVA_MODE is absent",
+    "maxOutputTokens": 8192,
+    "maxToolCalls": 6,
+    "sourceHashes": {
+      "samples/01-unopened-letter-dialogue.md": "BE76B378C65FFA98AAFC064A65257ACD99D3BDE149C8FD55CB4F790B1462A435",
+      "samples/02-blackout-stairwell-action.md": "EB3027446E97216393490A9AE6794F3F190497B8A7CF5257437F65F6E0DF612F",
+      "samples/03-dawn-platform-atmosphere.md": "9AB678B1F4930AAB6DC83C13E269B428F933B87808C9CD43EB013660F697A622",
+      "examples/pi-agent-gateway/src/runtime.ts": "38AACADE791939F30354D344DCF38851CF92283C7BB457C3C1E3566BF3E4AB35",
+      "examples/pi-agent-gateway/src/budget.ts": "D47D92C3414A9F05E4FA1B8509FAA2AFCA8005069059F9D4F5D9B5823027E166",
+      "examples/pi-agent-gateway/src/profiles.ts": "BA063F85FB517AA990770AD3E999B641E138BB245EC62F23E55502DA1AE57DB6",
+      "examples/pi-agent-gateway/src/storyboard-schema.ts": "655995A68EC056DABB08F6F9047E3BC7AE43F58D8DDFAC7D900DE22480DDEA25",
+      "examples/pi-agent-gateway/src/storyboard-tools.ts": "8BDAB9EF8CF6FB97DAACD5D16600125BCC9595C8E0BC1C7D637FCDC6674ECD81"
+    }
+  },
+  "budget": {
+    "businessRunCap": 8,
+    "costCapUsd": 1.0,
+    "automaticUsdStop": "implemented for configured live runs: pre-request reservation and a <= USD 1.00 process cap; not exercised against a real provider",
+    "usageCapture": "implemented for configured live runs: protected per-run provider ledger records raw message usage, costs, request ID when available, and retry policy",
+    "selectedModelRate": "unavailable: PI_MODEL is absent",
+    "pricingSource": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "blockingReason": "No credential/model/HTTP/pricing configuration. The budget controller has passed local no-fee tests but has not been exercised against a real provider."
+  },
+  "engineeringPreparation": {
+    "configurationPreflight": "examples/pi-agent-gateway/scripts/preflight.ts",
+    "budgetController": "examples/pi-agent-gateway/src/budget.ts",
+    "ledgerEndpoint": "GET /agent/runs/{runId}/ledger",
+    "retryPolicy": "maxRetries: 0",
+    "localNoFeeVerification": ["npm run check", "npm run budget:check", "npm run storyboard:check", "npm run smoke"]
+  },
+  "unavailableRunEvidence": [
+    "runId", "resultRef", "artifactId", "provider trace/request identifier",
+    "Java-persisted storyboard JSON", "raw usage", "request/retry detail", "duration", "automatic precheck", "human evaluation"
+  ],
+  "secretHandling": "Values were never read or recorded; this file contains only variable presence."
+}

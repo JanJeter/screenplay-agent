@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "batchId": "SB12-FIXED-EIGHT-20261007",
+  "purpose": "SB-12 fixed eight-run real-model validation; identity and duplicate-execution protection are date-independent.",
+  "allRunLabels": [
+    "01-A",
+    "01-B",
+    "01-8-A",
+    "01-8-B",
+    "02-A",
+    "02-B",
+    "03-A",
+    "03-B"
+  ],
+  "finalFiveLabels": [
+    "01-8-B",
+    "02-A",
+    "02-B",
+    "03-A",
+    "03-B"
+  ],
+  "terminalHistory": {
+    "01-A": "completed",
+    "01-B": "completed",
+    "01-8-A": "failed"
+  },
+  "carryover": {
+    "businessRuns": 3,
+    "providerRequests": 9,
+    "retries": 0,
+    "chargedUsd": "0.007482360",
+    "reservedUsd": "0",
+    "remainingUsd": "0.992517640",
+    "businessRunCap": 8,
+    "capUsd": "1.00"
+  },
+  "budgetLedgerPath": "quality-runs/20261007/01-8-A/01-8-A.provider-ledger.json",
+  "aggregateSummaryPath": "quality-runs/20261007/remaining-batch/batch-summary.json"
+}

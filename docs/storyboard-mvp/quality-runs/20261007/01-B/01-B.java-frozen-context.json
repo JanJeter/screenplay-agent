@@ -1,0 +1,14 @@
+{
+  "mode": "generate",
+  "targetShotCount": 6,
+  "instructions": "压低色温，强调林舟犹豫、信封未拆封、动作顺序和克制的夜雨氛围。",
+  "sourceSnapshot": {
+    "scriptId": "1",
+    "scriptRevision": 1,
+    "sourceSceneId": "1",
+    "sceneNo": "1",
+    "heading": "INT. 旧公寓客厅 - 夜",
+    "sceneText": "INT. 旧公寓客厅 - 夜\n\n雨敲着窗。许晴站在门边，没有进来。林舟从抽屉里拿出一封牛皮纸信，信封完整，封口未拆。\n\n许晴：你说有东西要给我。\n\n林舟把信藏到身后，停了两秒，又把它放到茶几上。\n\n林舟：不是现在。\n\n许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。\n\n许晴：那我先替你保管。\n\n林舟没有回答。雨声更响了。",
+    "sceneHash": "d5a923751a6e721ee6159ca231cbf0c189f297995b1063cd5107b8da51d94a96"
+  }
+}

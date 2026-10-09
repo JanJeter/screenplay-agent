@@ -1,0 +1,8 @@
+{
+  "stage": "record-acceptance-and-progress",
+  "label": "01-8-A",
+  "resume": true,
+  "failedAt": "2026-10-07T12:39:53.9407458Z",
+  "automaticResubmissionAllowed": false,
+  "reason": "Batch stopped; inspect preserved stage and run evidence before any continuation."
+}

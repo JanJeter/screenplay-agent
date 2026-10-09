@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "batchId": "SB12-FIXED-EIGHT-20261007",
+  "state": "ready-for-d-review",
+  "finalFive": {
+    "01-8-B": {
+      "outputEvidencePath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\01-8-B",
+      "clientRequestId": "sb12-01-8-b-6421d4f99c7241df93bbd0943232f564",
+      "javaRunId": "421bbb1b-fcf6-4052-b3a5-8ea4cd619e06",
+      "submissionStatus": "terminal",
+      "executionStatus": "completed",
+      "updatedAt": "2026-10-08T10:46:04.45192Z",
+      "traceId": "8968e290-63a6-44f5-8442-97464b83f749",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "3e9880ac-0986-4867-a04b-cbb1ee794605",
+        "storyboardId": "3e9880ac-0986-4867-a04b-cbb1ee794605"
+      }
+    },
+    "02-A": {
+      "outputEvidencePath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\02-A",
+      "clientRequestId": "sb12-02-a-dbb45180254b425bb34471577a972285",
+      "javaRunId": "cc34803b-e998-4e4a-8bd6-c7c8e3f8873d",
+      "submissionStatus": "terminal",
+      "executionStatus": "completed",
+      "updatedAt": "2026-10-08T10:46:17.2498394Z",
+      "traceId": "43c8ed09-3374-46c0-8ecf-6087363118e7",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "e8065c17-87ff-44c4-a9d9-9d10f00bd1fe",
+        "storyboardId": "e8065c17-87ff-44c4-a9d9-9d10f00bd1fe"
+      }
+    },
+    "02-B": {
+      "outputEvidencePath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\02-B",
+      "clientRequestId": "sb12-02-b-b12548f6e1a142c5a7dd5d9bfea5e1bc",
+      "javaRunId": "13c3292b-ad70-4a7e-af4a-ec3ec0bbcdfd",
+      "submissionStatus": "terminal",
+      "executionStatus": "completed",
+      "updatedAt": "2026-10-08T10:46:27.840137Z",
+      "traceId": "840ca371-a397-4528-8bad-a5ed59d2f4c7",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "f2bc2e42-ef32-494f-a51a-59ef17650e12",
+        "storyboardId": "f2bc2e42-ef32-494f-a51a-59ef17650e12"
+      }
+    },
+    "03-A": {
+      "outputEvidencePath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\03-A",
+      "clientRequestId": "sb12-03-a-33f47368a1f64d548b632bd25bce31d3",
+      "javaRunId": "92b4001e-2368-442d-89d8-96877c2f71b2",
+      "submissionStatus": "terminal",
+      "executionStatus": "completed",
+      "updatedAt": "2026-10-08T10:46:38.3992355Z",
+      "traceId": "0cac17a1-754f-4cdc-9077-199c0340bf8f",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "892b2e26-b54e-49a5-9a75-8d76ec2693f5",
+        "storyboardId": "892b2e26-b54e-49a5-9a75-8d76ec2693f5"
+      }
+    },
+    "03-B": {
+      "outputEvidencePath": "D:\\desktop\\screenplay-agent-backend\\docs\\storyboard-mvp\\quality-runs\\20261008\\03-B",
+      "clientRequestId": "sb12-03-b-936787dcfffc4bfe948d838c0fdb98f2",
+      "javaRunId": "9b0f71b0-07bf-4bfb-850d-9f9de08cfd80",
+      "submissionStatus": "terminal",
+      "executionStatus": "failed",
+      "updatedAt": "2026-10-08T10:46:52.9588618Z",
+      "traceId": "21736005-bd7d-48be-882d-7a3fc5369d50",
+      "resultRef": {
+        "type": "storyboard",
+        "id": "be29bb7c-28fc-4d0c-9232-2af921ed1784",
+        "storyboardId": "be29bb7c-28fc-4d0c-9232-2af921ed1784"
+      }
+    }
+  },
+  "updatedAt": "2026-10-08T10:46:52.9589587Z"
+}

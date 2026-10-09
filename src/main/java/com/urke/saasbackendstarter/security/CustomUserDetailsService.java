@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmailAndDeletedFalse(email)
+        return userRepository.findByEmailIgnoreCaseAndDeletedFalse(AccountInputs.email(email))
             .map(CustomUserDetails::new)
             .orElseThrow(() -> new UsernameNotFoundException(
                 messageSource.getMessage("user.notfound", null, LocaleContextHolder.getLocale())

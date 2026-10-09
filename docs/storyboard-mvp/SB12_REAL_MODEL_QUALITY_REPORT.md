@@ -1,8 +1,18 @@
 # SB-12 真实模型质量与预算验证
 
-状态：**READY_FOR_D_REVIEW — 2026-10-07 01-A、01-B completed；01-8-A 因最终回执格式 failed（已保存八镜）；后五项安全续跑入口及无费用验证已准备，尚未获 D 对后五项的新授权，未提交新的 provider 请求。累计 3 run / 9 provider requests / 0 retry。**
+状态：**TECHNICAL_CLOSURE_PENDING_D_REVIEW — 八项真实业务 run 已全部终态：6 completed、2 failed（01-8-A、03-B）。累计 8 / 8 business runs、25 provider requests、0 retry、USD 0.021636012 配置费率已计、USD 0 预留、USD 0.978363988 余额。禁止新增生成或重跑；SB-12 仍待人工逐镜评价和供应商扣款对账，不能宣布整体通过。**
 执行目录：`D:\desktop\screenplay-agent-backend`
-当日预检证据：[quality-runs/20261007/preflight.json](quality-runs/20261007/preflight.json)；供真人逐镜评价的空白材料：[quality-runs/20261007/HUMAN_EVALUATION_PACKET.md](quality-runs/20261007/HUMAN_EVALUATION_PACKET.md)。
+
+## 2026-10-08：运行后收尾（当前事实）
+
+- 终态：`01-A`、`01-B`、`01-8-B`、`02-A`、`02-B`、`03-A` 为 completed；`01-8-A`、`03-B` 保持 failed。业务 run 上限已用尽，即使美元余额尚存也**不得**运行任何 SB-12 真实入口。
+- [FinalFive 技术复验](SB12_FINAL_FIVE_TECHNICAL_REVIEW_2026-10-08.md)已只读确认 03-B 不是 provider 请求失败：其 4 次请求均 completed、第二次 `save_storyboard_result` 已保存 4 镜；随后最终模型回执在 JSON fence 外附加说明文字，触发当时严格回执解析并使 Java 终态为 `gateway_failed`。
+- 本轮新增只读补充证据（不覆盖原 failed 记录）：[03-B 已保存完整分镜](quality-runs/20261008/03-B/03-B.java-storyboard.readonly-recovered.json)、[完整 Java 事件链](quality-runs/20261008/03-B/03-B.agent-events.readonly-recovered.json)、[保存事件](quality-runs/20261008/03-B/03-B.save-events.readonly-recovered.json)、[最终模型回执](quality-runs/20261008/03-B/03-B.final-model-receipt.readonly-recovered.txt)、[导出记录](quality-runs/20261008/03-B/03-B.readonly-export-record.json)及[03-B v2 人工评价补充包](quality-runs/20261008/03-B/03-B.HUMAN_EVALUATION_SUPPLEMENT.v2.md)。[v2 生成记录](quality-runs/20261008/03-B/03-B.human-evaluation-v2-record.json)保存来源 JSON 与新版文件的 SHA-256 及替代关系；旧评价包保留但不再供评价。03-B 的 Java run 仍为 `failed / gateway_failed`，补证不将其改为 completed。
+- Gateway 已离线修复完成判据：只要本次 `save_storyboard_result` 的 Java 持久化回执通过 artifact/resultRef 校验，即以该受当前 run 能力令牌保护的成功工具结果判定完成；最终模型文字仅用于展示/诊断，不再能把已保存实体误判失败。缺失保存、保存工具报错、错误 artifactId/resultRef 仍会失败。严格 fenced-JSON 解析仍保留为诊断，不从说明文字中抽取 JSON。
+- 离线回归：`npm run check`、`npm run provider:check`、`npm run storyboard:check`、`npm run sb12:03b-replay` 通过；真实事件回放使用 03-B 已导出的事件和实体，`providerRequestsSent=0`。入口回归使用独立 `scripts/fixtures/sb12-final-five-initial-state.json`，不再复制生产 terminal 状态作为“首次运行”夹具。
+- 待 D：复验上述补证、离线修复及无费用回归。待真人：仅填写四个 completed run 的现有包，以及在明确“已保存实体、原 run failed”的前提下填写 03-B 补充包。待费用负责人：用供应商账单/日志对账；不得把 Gateway 配置费率账本写成供应商实际扣款。
+
+下方 2026-10-07 至运行前段落均为**历史准备与执行前记录**，其中的“3 run”“待授权”“可提交入口”等描述不再是当前状态。
 
 本报告将 2026-10-06 的缺配置记录视为历史参考；下方原预检表及 `preflight.json` 保留 2026-10-07 切换 provider 前的快照。下方启动交接、承接审计中的“0 run / 未执行”描述均是执行前历史记录；当前事实以紧接的真实运行记录为准。mock、fixture、契约测试和历史结果均不作为真实模型质量证据。
 
@@ -35,6 +45,27 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 ```
 
 该命令不要求重新输入、不显示或写入 `DEEPSEEK_API_KEY`；运行前若密钥、授权、端口/容器、账本、预算或构建检查不满足会停止。真实运行之后仍须由 D 复验技术证据，并由真人填写评价；供应商扣款对账同样仍待完成。
+
+## 2026-10-08：跨日期重放防护（本轮无真实模型请求）
+
+- 后五项入口现在固定关联全批身份 `SB12-FIXED-EIGHT-20261007`；[batch-identity.json](quality-runs/SB12_FIXED_EIGHT_BATCH/batch-identity.json)冻结八项成员、前三项终态和承接预算，[batch-execution-state.json](quality-runs/SB12_FIXED_EIGHT_BATCH/batch-execution-state.json)为五项保存不随日期变化的提交状态。`01-8-A` 保持 failed，累计仍为 **3 run / 9 requests / 0 retry / USD 0.007482360 charged / USD 0 reserved**。
+- 启动器在任何服务、Java POST 或 provider 请求之前读取固定状态并递归扫描完整 `quality-runs/` 历史。任何 `submission-marker`、accepted、Java run、provider ledger、目录存在，或持久状态为 `unknown/submitted` 都会拒绝完整五项重放；`EvidenceRootOverride` 只能用于无费用测试，不能改变实际执行的状态/历史根路径。
+- 每次真实提交前先把对应状态持久化为 `unknown`；收到 accepted 和终态后继续更新。进程中断、结果未知、失败或完成均不能自动重发。固定批次锁 `batch-execution.lock` 使用排他文件句柄，第二个同批启动器不能进入。
+- 无费用回归 `verify-sb12-final-five-entry.ps1` 已实测通过：首次合法入口、同日提交拒绝、跨日提交拒绝、未知提交拒绝、改变输出目录后仍拒绝，以及并发锁拒绝；返回 `providerRequestsSent=0`。没有启动真实服务或读取密钥。
+- D 授权仍为 [SB12_FINAL_FIVE_REVIEW.md](SB12_FINAL_FIVE_REVIEW.md) 中的 `PENDING_D_REVIEW`，未自行变更；SB-12 仍未整体通过。
+
+## 2026-10-08：复验阻断修复（本轮无真实模型请求）
+
+- 已修复持久状态首次写入：`Set-FixedBatchRunState` 现用 `Add-Member -Force` 写入可选属性（包括初始 JSON 中不存在的 `updatedAt`），不再在真实提交前因直接属性赋值中断。实际状态序列固定为 `not-submitted → unknown → submitted → terminal`；终态和未知状态都会阻止完整五项重发。
+- 无费用回归实际调用生产 `Set-FixedBatchRunState`，随后从磁盘重新读取并验证 `01-8-B` 的 `terminal/completed/updatedAt`。同一临时状态若改为 `unknown` 或已为 `terminal`，重新启动均被拒绝。
+- 为杜绝旧入口绕过，`run-sb12-01a-live.ps1` 与 `run-sb12-remaining-live.ps1` 的 `RemainingSeven` 模式均已退役并在密钥、日期输出目录、预算或服务操作前停止。唯一潜在真实提交入口是受 D 授权的 FinalFive；其先持有固定锁，再检查固定状态和完整历史。
+- 本次无费用回归还实际验证旧 RemainingSeven 在更换新日期输出目录后拒绝、旧 01-A 拒绝、同批锁拒绝。验证结果仍为 `providerRequestsSent=0`；没有改动历史证据、费用或 01-8-A failed 状态。
+
+## 2026-10-08：FinalFive 提交前 JDK 拒绝与安全恢复
+
+- 一次受控启动在 `fresh-startup` 阶段发现 `JAVA_HOME=D:\javajdk\jdk17`，JDK 21 门槛拒绝。该阶段发生在服务、Java POST 与 provider 请求之前；保留的 `quality-runs/20261008/final-five-batch/` 仅含阶段和无敏感失败记录，固定状态仍全部 `not-submitted`，端口 `15435/18083/13004` 未监听。
+- 新增仅限预提交现场的 `-ResumePreparedBatch -ResumeCheckOnly` / `-ResumePreparedBatch`。它在固定锁、状态和全历史检查后，要求阶段仅为 `fresh-startup` 或 `resume-preflight`，且没有后五项目录、submission marker、accepted、Java run 或 provider ledger。通过后重做完整预检；不删除原失败记录，也不能用于重发。
+- 已实际对该保留现场执行 `-ResumePreparedBatch -ResumeCheckOnly`，输出 `FinalFive preparation-resume checks passed. No POST or provider request was sent.`；同时新增离线回归 `safe-pre-submission-preparation-resume` 并通过。恢复所需 JDK 21 路径为 `C:\Users\tcf\.jdks\ms-21.0.9`，已只读确认版本为 21.0.9。
 
 ## 2026-10-07 20:39：恢复准备现场，执行到 01-8-A 后停止
 

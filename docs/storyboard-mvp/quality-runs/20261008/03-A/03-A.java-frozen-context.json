@@ -1,0 +1,14 @@
+{
+  "mode": "generate",
+  "targetShotCount": 4,
+  "instructions": "全场无对白；突出雾、蓝光、湿车票、清洁工与无列车的清晨氛围。",
+  "sourceSnapshot": {
+    "scriptId": "4",
+    "scriptRevision": 1,
+    "sourceSceneId": "4",
+    "sceneNo": "1",
+    "heading": "EXT. 城郊站台 - 清晨",
+    "sceneText": "EXT. 城郊站台 - 清晨\n\n雾贴着空站台。自动售票机的蓝光闪烁，一张被雨水打湿的车票贴在长椅脚边。\n\n清洁工推着空车从画面远处经过，没有停下。铁轨尽头传来很远的鸟叫，没有列车进站。\n\n风把车票吹到黄线前，又停住。雾慢慢遮住铁轨。",
+    "sceneHash": "e944910af6327fa91f22cddac2442dd40fcf24958bee3003b4da0b6d30f759d5"
+  }
+}

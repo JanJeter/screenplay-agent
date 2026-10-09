@@ -1,5 +1,9 @@
 # HANDOFF: Screenplay Agent Backend Adaptation
 
+> 2026-10-08 当前交接入口：[分镜工作台实际使用阶段交接](D:/desktop/screenplay-agent-backend/docs/WORKBENCH_NEXT_PHASE_HANDOFF.md)。PI 接入和 SB-12 工程收尾已完成，下一阶段推进独立开发环境与网页实际操作。用户已暂缓真人评价材料及供应商对账，不以它们阻挡本地开发。
+>
+> 下文保留早期 Java-only 阶段背景；其中“PI 待接入”、旧下一步任务和旧运行状态不再作为当前执行计划。
+
 ## Current Goal
 
 Adapt the existing Java Spring Boot SaaS backend starter into an AI film/script production backend.

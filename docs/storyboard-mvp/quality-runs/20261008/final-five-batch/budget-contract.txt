@@ -1,0 +1,5 @@
+
+> budget:check
+> node ../../pi-agent/node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json scripts/budget-contract.ts
+
+PASS: provider-specific credentials, explicit zero cache rates, invalid numeric rejection, eight-run cap, conservative reservation, usage accounting, invalid-usage/failed-request charging, and budget/context rejection

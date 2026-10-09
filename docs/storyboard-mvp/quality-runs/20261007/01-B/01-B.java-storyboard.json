@@ -1,0 +1,99 @@
+{
+  "id": "7abd1704-7b07-439d-9cc8-502af7bed8bb",
+  "projectId": "1",
+  "createdBy": "1",
+  "sourceRunId": "4855bf05-843f-4b07-99b7-99de8105e3ac",
+  "sourceSnapshot": {
+    "scriptId": "1",
+    "scriptRevision": 1,
+    "sourceSceneId": "1",
+    "sceneNo": 1,
+    "heading": "INT. 旧公寓客厅 - 夜",
+    "sceneText": "INT. 旧公寓客厅 - 夜\n\n雨敲着窗。许晴站在门边，没有进来。林舟从抽屉里拿出一封牛皮纸信，信封完整，封口未拆。\n\n许晴：你说有东西要给我。\n\n林舟把信藏到身后，停了两秒，又把它放到茶几上。\n\n林舟：不是现在。\n\n许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。\n\n许晴：那我先替你保管。\n\n林舟没有回答。雨声更响了。",
+    "sceneHash": "d5a923751a6e721ee6159ca231cbf0c189f297995b1063cd5107b8da51d94a96"
+  },
+  "revision": 1,
+  "createdAt": "2026-10-07T12:39:38.500486Z",
+  "updatedAt": "2026-10-07T12:39:38.500486Z",
+  "shots": [
+    {
+      "id": "db954c0f-6262-4845-a121-bb9a47a20680",
+      "orderIndex": 0,
+      "shotSize": "ESTABLISHING",
+      "cameraMovement": "STATIC",
+      "visualDescription": "旧公寓客厅夜景，低色温的冷蓝灰笼罩全屋，窗玻璃上密布雨痕，室内只有一盏昏黄台灯。许晴站在门边，没有进来，身影半在走廊阴影里；林舟在房间深处的抽屉旁。",
+      "dialogue": "",
+      "sound": "夜雨密集敲窗，隐约的室内空调低鸣",
+      "durationSeconds": 4,
+      "imagePrompt": "冷色调夜景，旧公寓客厅，低色温蓝灰调，一盏昏黄台灯，窗外雨痕密布，一名女子站在门边未入内，身影半隐在门口阴影，远处一名男子在抽屉旁，电影感构图，35mm 宽幅，浅景深，克制压抑氛围，写实光影",
+      "videoPrompt": "固定机位远景，缓慢推进感的静止画面；雨痕在窗玻璃上流动，台灯光轻微呼吸，门边女子保持不动，远处男子在抽屉旁的动作带出细微位移；整体冷蓝灰色调，氛围克制、压抑，无镜头晃动",
+      "sourceQuote": "雨敲着窗。许晴站在门边，没有进来。"
+    },
+    {
+      "id": "50a50d49-0f65-431b-835f-b9a533eddb4a",
+      "orderIndex": 1,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "DOLLY_IN",
+      "visualDescription": "林舟侧身站在抽屉前，手从抽屉里取出一封牛皮纸信。信封完整，封口未拆，纸张边缘在冷光下微微泛黄。镜头缓缓靠近，焦点落在他的手上。",
+      "dialogue": "",
+      "sound": "抽屉滑开的木质摩擦声，雨声持续",
+      "durationSeconds": 4,
+      "imagePrompt": "中景，男子从抽屉取出牛皮纸信封，信封完整封口未拆，冷蓝色调，侧光打在手上，昏暗室内，浅景深聚焦信封质感，写实电影摄影，克制的紧张感",
+      "videoPrompt": "中景缓慢推近，镜头由中景推向手部与信封；男子动作沉缓，手指轻捏信封边缘；冷蓝侧光，木质抽屉反光微动，雨影在墙面流动，无夸张运镜",
+      "sourceQuote": "林舟从抽屉里拿出一封牛皮纸信，信封完整，封口未拆。"
+    },
+    {
+      "id": "c5714d71-c28d-4461-9230-5fb8229c8c64",
+      "orderIndex": 2,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "HANDHELD",
+      "visualDescription": "许晴站在原地的近景，声音平静但目光直视林舟。冷光落在她半张脸上，另半边沉在暗处，嘴唇微动，呼吸可见。",
+      "dialogue": "你说有东西要给我。",
+      "sound": "雨声，环境静默，话语清晰低缓",
+      "durationSeconds": 5,
+      "imagePrompt": "近景，女子半脸受冷光半脸隐于暗处，直视前方，表情平静却含探究，低色温蓝调，轻微手持感，浅景深，写实电影剧照",
+      "videoPrompt": "手持近景，轻微呼吸感晃动；女子开口说话，眼神稳定注视前方，睫毛与呼吸细节可见；冷光缓慢掠过面部，背景雨声虚化，情绪克制",
+      "sourceQuote": "许晴：你说有东西要给我。"
+    },
+    {
+      "id": "f5d35c17-9847-4c21-9b71-62becf145c1d",
+      "orderIndex": 3,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "STATIC",
+      "visualDescription": "林舟把信藏到身后，手指收紧；停顿两秒，他垂下目光，又把信放到茶几上，动作迟滞而克制。冷光下信封静静躺在玻璃茶几上。",
+      "dialogue": "",
+      "sound": "纸张轻触玻璃的钝响，雨声渐强",
+      "durationSeconds": 6,
+      "imagePrompt": "中景，男子将信封藏到身后又放到玻璃茶几，动作迟疑，冷蓝低色温，昏黄台灯余光，昏暗客厅，写实电影光照，情绪压抑",
+      "videoPrompt": "固定中景，男子先把手背到身后停顿两秒，再缓慢把信封放下茶几；镜头不动，靠演员动作与微光变化推进；雨声缓慢增强，气氛凝重",
+      "sourceQuote": "林舟把信藏到身后，停了两秒，又把它放到茶几上。"
+    },
+    {
+      "id": "e528b9eb-230a-4272-b10e-ce8641a2df5d",
+      "orderIndex": 4,
+      "shotSize": "CLOSE_UP",
+      "cameraMovement": "DOLLY_IN",
+      "visualDescription": "林舟的近景，他没有看许晴，只低声开口。冷光压在他眼下，面色疲惫，喉结微动，克制地回避对视。",
+      "dialogue": "不是现在。",
+      "sound": "雨声持续，低沉室内环境音",
+      "durationSeconds": 4,
+      "imagePrompt": "近景，男子低垂目光不看对方，疲惫克制神情，冷蓝低色温，侧逆光勾勒轮廓，昏暗客厅背景虚化，写实电影风格",
+      "videoPrompt": "缓慢推近近景，男子短暂停顿后开口说三个字，随后目光再次下沉；镜头极缓靠近，强化犹疑与压力；雨声作为持续背景底音",
+      "sourceQuote": "林舟：不是现在。"
+    },
+    {
+      "id": "655d72a5-66ac-4d5d-a51f-d568d27be72b",
+      "orderIndex": 5,
+      "shotSize": "MEDIUM",
+      "cameraMovement": "TRACK",
+      "visualDescription": "许晴走到茶几前，俯身拿起那封未拆的信。她没有打开，只抬眼看向林舟。镜头随她移动，最后停在她握信的手与注视的目光上。林舟没有回答，窗外雨声更响。",
+      "dialogue": "那我先替你保管。",
+      "sound": "脚步轻响，纸张摩擦，雨声骤然增强",
+      "durationSeconds": 6,
+      "imagePrompt": "中景，女子走到茶几前拿起未拆信封，未打开，抬头注视男子，冷蓝低色温，雨窗背景，写实电影摄影，动作克制，情绪留白",
+      "videoPrompt": "跟随移动镜头随女子走到茶几前，她俯身取信后直起身抬头；镜头稳定跟随并轻微下沉收尾，雨声在结尾明显增强，男子保持沉默静止",
+      "sourceQuote": "许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。"
+    }
+  ],
+  "proposalSummaries": []
+}

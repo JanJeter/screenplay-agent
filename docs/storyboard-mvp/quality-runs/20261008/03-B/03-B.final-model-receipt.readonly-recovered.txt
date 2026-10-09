@@ -1,0 +1,5 @@
+已保存联板（4 个镜头）。
+
+```json
+{"artifactId":"be29bb7c-28fc-4d0c-9232-2af921ed1784","resultRef":{"type":"storyboard","id":"be29bb7c-28fc-4d0c-9232-2af921ed1784","storyboardId":"be29bb7c-28fc-4d0c-9232-2af921ed1784"}}
+```

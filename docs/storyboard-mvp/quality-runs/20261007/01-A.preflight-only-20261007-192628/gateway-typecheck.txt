@@ -1,0 +1,4 @@
+
+> check
+> node ../../pi-agent/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json
+

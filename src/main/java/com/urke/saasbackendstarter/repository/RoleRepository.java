@@ -11,6 +11,7 @@ import java.util.Optional;
  * JPA repository for user roles.
  */
 public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByIdAndOrganizationId(Long id, Long organizationId);
     Optional<Role> findByNameAndOrganizationId(String name, Long organizationId);
     boolean existsByNameAndOrganizationId(String name, Long organizationId);
     List<Role> findAllByOrganizationId(Long organizationId);

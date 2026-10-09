@@ -67,3 +67,6 @@ hs_err_pid*
 /apps/storyboard-web/playwright-report/
 # Public frontend configuration example contains no credentials.
 !/apps/storyboard-web/.env.example
+
+# Persistent local workbench state, credentials, logs and activity ledgers
+/.local/

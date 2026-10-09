@@ -1,0 +1,24 @@
+{
+  "label": "自动预检查",
+  "javaRunId": "421bbb1b-fcf6-4052-b3a5-8ea4cd619e06",
+  "gatewayRunId": "04ddfa64-760b-4244-bb5f-7eec2659b2c4",
+  "traceId": "8968e290-63a6-44f5-8442-97464b83f749",
+  "status": "completed",
+  "startedAt": "2026-10-08T10:45:49.6832724Z",
+  "endedAt": "2026-10-08T10:46:04.4405154Z",
+  "durationMs": 14757,
+  "expectedShotCount": 8,
+  "actualShotCount": 8,
+  "allSourceQuotesInJavaFrozenScene": true,
+  "allImagePromptsPresent": true,
+  "allVideoPromptsPresent": true,
+  "criticalFactAutomatedChecks": {
+    "sourceQuotesLocated": true,
+    "forbiddenPatternMatches": [
+      "信.{0,10}(打开|拆开|读)"
+    ],
+    "dialogueEmptyForAtmosphereSample": null,
+    "semanticContinuity": "无法由关键词可靠判定；必须由真人检查动作、道具、关系与 Prompt 的逐镜连续性。"
+  },
+  "humanEvaluation": "待人工评价：直接用 / 小改可用 / 需要重做。"
+}

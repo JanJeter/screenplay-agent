@@ -1,0 +1,29 @@
+{
+  "label": "01-B",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "targetShotCount": 6,
+  "instructions": "压低色温，强调林舟犹豫、信封未拆封、动作顺序和克制的夜雨氛围。",
+  "implementationSha256": {
+    "src\\runtime.ts": "8004FDD1D8D4FD528ACA3188339D52D17955490E79E81CB9E99457AAA4DC749C",
+    "src\\profiles.ts": "BA063F85FB517AA990770AD3E999B641E138BB245EC62F23E55502DA1AE57DB6",
+    "src\\storyboard-tools.ts": "8BDAB9EF8CF6FB97DAACD5D16600125BCC9595C8E0BC1C7D637FCDC6674ECD81",
+    "src\\storyboard-schema.ts": "655995A68EC056DABB08F6F9047E3BC7AE43F58D8DDFAC7D900DE22480DDEA25",
+    "src\\budget.ts": "62CF84C359544EBC392E2B1ECDAC8146089CAE939C19EED48F3E5E081BD29252"
+  },
+  "inputTokenReserve": 50000,
+  "providerInputOverheadTokens": 2000,
+  "maxOutputTokens": 8192,
+  "maxRetries": 0,
+  "carryover": {
+    "sourceRunId": "05d93636-7cf1-43db-beed-3dd2047291af",
+    "sourceTraceId": "5f37a648-5ab3-4238-a683-3c9f5ac4c885",
+    "initialBusinessRuns": 1,
+    "initialChargedUsd": 0.002657148,
+    "initialProviderRequests": 3,
+    "importedAt": "2026-10-07T12:19:55.1464953Z",
+    "acceptanceSha256": "916B46B2B7BFC9E3BD4ADD4AB5A20362E851CA9BD9BFD22E928CD9177E5AD1EE",
+    "ledgerSha256": "7A6301ADFABE4D43CE5D6F4618878C90DCB9E33B5259D6E356112759D09804D9"
+  },
+  "startedAt": "2026-10-07T12:39:30.0078959Z"
+}

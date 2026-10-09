@@ -1,0 +1,26 @@
+{
+  "label": "自动预检查",
+  "javaRunId": "05d93636-7cf1-43db-beed-3dd2047291af",
+  "gatewayRunId": "a1c93b20-3717-4612-9e64-a288f3728ee8",
+  "traceId": "5f37a648-5ab3-4238-a683-3c9f5ac4c885",
+  "status": "completed",
+  "startedAt": "2026-10-07T11:29:56.035225Z",
+  "endedAt": "2026-10-07T11:30:06.455535Z",
+  "durationMs": 10420.31,
+  "timingSource": "Java persisted startedAt/endedAt; excludes preflight, build, service startup and evidence recovery.",
+  "expectedShotCount": 6,
+  "actualShotCount": 6,
+  "allSourceQuotesInJavaFrozenScene": true,
+  "allImagePromptsPresent": true,
+  "allVideoPromptsPresent": true,
+  "sourceHashMatchesPreSubmissionSnapshot": true,
+  "instructionsMatchGenerationRequest": true,
+  "savedArtifactSourceMatchesFrozenContext": true,
+  "immutableFactsForHumanReview": [
+    "信始终未拆封且许晴不读信",
+    "动作顺序：林舟藏信 → 林舟放信 → 许晴收信",
+    "没有和解、离开或新增事件"
+  ],
+  "humanEvaluation": "待人工评价：直接用 / 小改可用 / 需要重做。自动预检查不是人工质量结论。",
+  "recoveredAt": "2026-10-07T11:34:00.4264882Z"
+}

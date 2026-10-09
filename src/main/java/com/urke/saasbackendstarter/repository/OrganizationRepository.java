@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.List;
 
 public interface OrganizationRepository extends JpaRepository<Organization, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select o from Organization o where o.id = :id and o.deleted = false")
+    Optional<Organization> findLockedById(@org.springframework.data.repository.query.Param("id") Long id);
     Optional<Organization> findByNameAndDeletedFalse(String name);
     Optional<Organization> findBySlugAndDeletedFalse(String slug);
     boolean existsByNameAndDeletedFalse(String name);
