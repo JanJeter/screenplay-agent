@@ -63,3 +63,7 @@ hs_err_pid*
 /apps/storyboard-web/node_modules/
 /apps/storyboard-web/dist/
 /apps/storyboard-web/*.tsbuildinfo
+/apps/storyboard-web/test-results/
+/apps/storyboard-web/playwright-report/
+# Public frontend configuration example contains no credentials.
+!/apps/storyboard-web/.env.example

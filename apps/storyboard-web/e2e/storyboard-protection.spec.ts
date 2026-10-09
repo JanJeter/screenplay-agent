@@ -236,7 +236,7 @@ test('response injected: cancelling Link and browser-back navigation retains URL
 test('response injected: INTERRUPTED stops polling and permits a new generation', async ({ page }) => {
   const mock = await installWorkspaceMock(page, { runStatus: 'INTERRUPTED' })
   await openWorkspace(page, '&run=run-interrupted')
-  await expect(page.getByText('任务已中断：RECOVERY_INTERRUPTED')).toBeVisible()
+  await expect(page.getByText('任务已中断：服务恢复前任务未完成，请重新发起任务；已保存内容不受影响。')).toBeVisible()
   // React StrictMode may perform the initial recovery check twice in dev. The
   // assertion is that no timed polling request follows either initial check.
   const readsAfterRecovery = mock.server.runReads

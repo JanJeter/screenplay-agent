@@ -1,10 +1,12 @@
 import type { AgentRun, GenerationInput, Project, RunAccepted, RunProgress, RunStatus, Scene, Script, ShotProposal, ShotRegenerationInput, Storyboard, StoryboardSaveInput, StoryboardSummary } from '../types'
 import { ApiError, type ScreenplayApi } from './contract'
+import { runErrorMessage } from './run-errors'
+import { isLegacyWorkbench, javaApiBase as apiBase, legacyReadOnlyMessage } from '../environment'
+import type { AuthorizedRequest } from './http'
 
 type Tokens = { accessToken: string; refreshToken: string }
-type JavaApiOptions = { getTokens: () => Tokens | null; updateTokens: (tokens: Tokens) => void; onExpired: () => void }
+type JavaApiOptions = { getTokens: () => Tokens | null; updateTokens: (tokens: Tokens) => void; onExpired: () => void; request?: AuthorizedRequest }
 type RequestOptions = { method?: string; body?: unknown; retry?: boolean; expectJson?: boolean; expectText?: boolean }
-const apiBase = import.meta.env.VITE_JAVA_API_BASE ?? ''
 
 // Existing screenplay endpoints expose database Long values as JSON numbers. The
 // workbench keeps IDs as strings, as required by the storyboard contract.
@@ -14,11 +16,15 @@ function normalizeScene(value: Omit<Scene, 'id' | 'scriptVersionId' | 'sceneNo'>
 function normalizeRun<T extends { status: string }>(value: T): T & { status: RunStatus } { return { ...value, status: value.status.toUpperCase() as RunStatus } }
 
 function errorFromResponse(response: Response): Promise<ApiError> {
-  return response.json().catch(() => null).then((body: { code?: string; message?: string } | null) => new ApiError(response.status, body?.message ?? '请求未完成，请稍后重试。', body?.code))
+  return response.json().catch(() => null).then((body: { code?: string; message?: string } | null) => new ApiError(response.status, runErrorMessage(body?.code) ?? body?.message ?? '请求未完成，请稍后重试。', body?.code))
 }
 
 export function createJavaApi(options: JavaApiOptions): ScreenplayApi {
   async function request<T>(path: string, requestOptions: RequestOptions = {}): Promise<T> {
+    if (options.request) return options.request<T>(path, requestOptions)
+    if (isLegacyWorkbench && ['POST', 'PUT', 'PATCH', 'DELETE'].includes((requestOptions.method ?? 'GET').toUpperCase())) {
+      throw new ApiError(403, legacyReadOnlyMessage, 'LEGACY_WORKBENCH_READ_ONLY')
+    }
     const tokens = options.getTokens()
     const response = await fetch(`${apiBase}/api/v1${path}`, {
       method: requestOptions.method ?? 'GET',

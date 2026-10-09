@@ -1,13 +1,26 @@
 import { FormEvent, useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Button } from '../components'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Button, Icon } from '../components'
 import { useAuth } from '../auth'
+import { ApiError } from '../api/contract'
+import { AccountInput, AccountLayout, AccountPassword } from './AccountLayout'
 
 export function LoginPage() {
   const auth = useAuth(); const navigate = useNavigate(); const location = useLocation()
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [pending, setPending] = useState(false)
+  const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [errorCode, setErrorCode] = useState(''); const [pending, setPending] = useState(false)
   if (auth.session) return <Navigate to="/projects" replace />
-  const target = (location.state as { from?: string } | null)?.from ?? '/projects'
-  async function submit(event: FormEvent) { event.preventDefault(); setPending(true); setError(''); try { await auth.login(email, password); navigate(target, { replace: true }) } catch (reason) { setError(reason instanceof Error ? reason.message : '登录未完成。') } finally { setPending(false) } }
-  return <main className="login-shell"><section className="login-intro"><p className="wordmark">镜场</p><h1>把一场戏，整理成可继续打磨的镜头。</h1><p>从项目、剧本版本到分镜草稿，所有内容都在同一个工作区完成。</p></section><section className="login-card"><h2>登录工作台</h2><p className="muted">使用现有账号继续。</p><form onSubmit={submit}><label>邮箱<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><label>密码<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={pending}>{pending ? '正在登录…' : '登录'}</Button></form>{auth.isFixture && <div className="fixture-entry"><span>开发模式</span><Button className="button--quiet" onClick={() => { auth.enterFixture(); navigate('/projects') }}>进入 fixtures 演示</Button></div>}</section></main>
+  const requestedTarget = (location.state as { from?: string } | null)?.from ?? '/projects'
+  const target = requestedTarget.startsWith('/') && !requestedTarget.startsWith('//') ? requestedTarget : '/projects'
+  async function submit(event: FormEvent) { event.preventDefault(); setPending(true); setError(''); setErrorCode(''); try { await auth.login(email, password); navigate(target, { replace: true }) } catch (reason) { setError(reason instanceof Error ? reason.message : '登录未完成。'); setErrorCode(reason instanceof ApiError ? reason.code ?? '' : '') } finally { setPending(false) } }
+  return <AccountLayout title="登录工作台" description="回到你的故事，继续打磨下一个镜头。">
+    <form className="account-form" onSubmit={submit} aria-busy={pending}>
+      <AccountInput label="邮箱" type="email" autoComplete="email" placeholder="你的邮箱地址" maxLength={80} value={email} onChange={(event) => setEmail(event.target.value)} required />
+      <AccountPassword label="密码" autoComplete="current-password" placeholder="输入密码" value={password} onChange={(event) => setPassword(event.target.value)} required action={<Link className="account-forgot" to="/forgot-password">忘记密码？</Link>} />
+      {error && <p className="form-error" role="alert">{error}</p>}
+      {errorCode === 'email_not_verified' && <Link className="account-link" to={`/resend-verification?email=${encodeURIComponent(email.trim().toLowerCase())}`}>重新发送验证邮件</Link>}
+      <Button className="account-submit" type="submit" disabled={pending}>{pending ? '正在登录…' : '登录'}<Icon name="arrow" /></Button>
+    </form>
+    <p className="account-footer">还没有账号？<Link to="/register">创建账号</Link></p>
+    {auth.isFixture && <div className="fixture-entry"><span>开发模式</span><Button className="button--quiet" onClick={() => { auth.enterFixture(); navigate('/projects') }}>进入 fixtures 演示</Button></div>}
+  </AccountLayout>
 }

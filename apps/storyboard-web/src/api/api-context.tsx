@@ -17,10 +17,11 @@ export function ApiProvider({ children }: PropsWithChildren) {
   useEffect(() => { sessionRef.current = auth.session }, [auth.session])
   useEffect(() => { updateSessionRef.current = auth.updateSession; expireRef.current = auth.expire }, [auth.expire, auth.updateSession])
   const api = useMemo(() => auth.isFixture ? fixtureApi : createJavaApi({
+    request: auth.request,
     getTokens: () => sessionRef.current,
     updateTokens: (tokens) => { sessionRef.current = tokens; updateSessionRef.current(tokens) },
     onExpired: () => { sessionRef.current = null; expireRef.current() }
-  }), [auth.isFixture])
+  }), [auth.isFixture, auth.request])
   return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>
 }
 export function useApi() { const value = useContext(ApiContext); if (!value) throw new Error('ApiProvider is required'); return value }

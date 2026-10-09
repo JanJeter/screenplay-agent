@@ -15,6 +15,7 @@ export type StoryboardSummary = { id: string; projectId: string; scriptId: strin
 export type RunStatus = 'QUEUED' | 'RUNNING' | 'FINALIZING' | 'CANCELLING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'INTERRUPTED'
 export type AgentRun = { id: string; status: RunStatus; errorCode: string | null; resultRef: { type: 'storyboard' | 'shot_proposal'; id: string; storyboardId: string } | null }
 export type Session = { accessToken: string; refreshToken: string }
+export type UserProfile = { id: number; email: string; fullName: string; roles: string[]; permissions: string[]; organizationId: number; organizationName: string; emailVerified: boolean; enabled: boolean }
 export type GenerationInput = { scriptId: string; sceneId: string; targetShotCount: number; instructions: string; clientRequestId: string }
 export type ShotRegenerationInput = { instruction: string; expectedRevision: number; clientRequestId: string }
 export type RunAccepted = { runId: string; status: RunStatus }

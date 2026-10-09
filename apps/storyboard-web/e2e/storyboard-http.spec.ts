@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 const sourceText = `INT. 旧公寓客厅 - 夜
 
@@ -14,7 +16,7 @@ const sourceText = `INT. 旧公寓客厅 - 夜
 
 许晴走到茶几前，拿起那封未拆的信。她没有打开，只看着林舟。`
 
-type Shot = { id: string; orderIndex: number; visualDescription: string }
+type Shot = { id: string; orderIndex: number; visualDescription: string; imagePrompt: string; videoPrompt: string }
 type Storyboard = { id: string; revision: number; shots: Shot[] }
 
 async function browserApi<T>(page: Page, path: string): Promise<T> {
@@ -27,22 +29,25 @@ async function browserApi<T>(page: Page, path: string): Promise<T> {
   }, { requestPath: path, requestBaseUrl: baseUrl })
 }
 
-test('real HTTP workflow preserves source and non-target shots', async ({ page }) => {
+test('mock HTTP workflow preserves source, saves edits, resolves redo, copies and downloads', async ({ page, context }) => {
+  const projectName = `工作台 Mock 流程测试 ${new Date().toISOString()}`
   await page.goto('/login')
-  await page.getByLabel('邮箱').fill('admin@demo.com')
-  await page.getByLabel('密码').fill('admin12345')
+  await expect(page.getByText('Mock · 流程测试，不调用真实模型')).toBeVisible()
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(page.url()).origin })
+  await page.getByLabel('邮箱').fill(process.env.E2E_LOGIN_EMAIL ?? 'admin@demo.com')
+  await page.getByLabel('密码').fill(process.env.E2E_LOGIN_PASSWORD ?? 'admin12345')
   await page.getByRole('button', { name: '登录' }).click()
 
   await page.getByRole('button', { name: '创建项目' }).first().click()
-  await page.getByLabel('项目名称').fill('SB-11 HTTP 验收')
+  await page.getByLabel('项目名称').fill(projectName)
   await page.getByLabel('类型').fill('悬疑短片')
   await page.getByRole('button', { name: '创建并导入剧本' }).click()
 
   await page.getByRole('button', { name: '粘贴剧本' }).click()
-  await page.getByLabel('版本名称').fill('SB-11 第一稿')
+  await page.getByLabel('版本名称').fill('Mock 流程测试第一稿')
   await page.getByLabel('剧本文本').fill(sourceText)
   await page.getByRole('button', { name: '保存并解析' }).click()
-  await page.getByRole('link', { name: /SB-11 第一稿/ }).click()
+  await page.getByRole('link', { name: /Mock 流程测试第一稿/ }).click()
 
   await expect(page.getByRole('button', { name: '生成分镜' })).toBeVisible()
   await page.getByLabel('镜头数').selectOption('4')
@@ -52,6 +57,7 @@ test('real HTTP workflow preserves source and non-target shots', async ({ page }
   await expect(page.getByText('分镜已保存，可继续编辑。')).toBeVisible()
 
   const scriptId = new URL(page.url()).pathname.split('/')[4]
+  const projectId = new URL(page.url()).pathname.split('/')[2]
   const storyboardId = new URL(page.url()).searchParams.get('storyboard')
   expect(storyboardId).not.toBeNull()
   const before = await browserApi<Storyboard>(page, `/api/v1/screenplay/storyboards/${storyboardId}`)
@@ -85,6 +91,27 @@ test('real HTTP workflow preserves source and non-target shots', async ({ page }
   const sourceAfterAccept = await browserApi<{ rawText: string }>(page, `/api/v1/screenplay/scripts/${scriptId}`)
   expect(sourceAfterAccept.rawText).toBe(sourceText)
 
+  await page.reload()
+  await expect(page.getByLabel('画面描述')).toHaveValue(afterAccept.shots[0].visualDescription)
+  await expect(page.getByRole('button', { name: '采纳候选' })).toHaveCount(0)
+  await page.getByRole('button', { name: '重做此镜头' }).click()
+  await page.getByLabel('修改要求').fill('仅尝试稍远的构图，此次候选用于放弃流程测试。')
+  await page.getByRole('button', { name: '生成候选' }).click()
+  await expect(page.getByText('候选镜头已保存；原镜头尚未修改。请比较后采纳或放弃。')).toBeVisible({ timeout: 45_000 })
+  await page.getByRole('button', { name: '放弃候选' }).click()
+  await expect(page.getByText('已放弃候选；原镜头未修改。')).toBeVisible()
+  const afterReject = await browserApi<Storyboard>(page, `/api/v1/screenplay/storyboards/${storyboardId}`)
+  expect(afterReject.revision).toBe(afterAccept.revision)
+  expect(afterReject.shots).toEqual(afterAccept.shots)
+  await page.reload()
+  await expect(page.getByLabel('画面描述')).toHaveValue(afterAccept.shots[0].visualDescription)
+  await expect(page.getByRole('button', { name: '放弃候选' })).toHaveCount(0)
+
+  for (const [label, prompt] of [['图像 Prompt', afterReject.shots[0].imagePrompt], ['视频 Prompt', afterReject.shots[0].videoPrompt]]) {
+    await page.locator('.field--wide').filter({ has: page.locator('.prompt-label', { hasText: label }) }).getByRole('button', { name: '复制', exact: true }).click()
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(prompt)
+  }
+
   // This request reaches the temporary Java/PostgreSQL stack first. Only its
   // browser response is held back, reproducing a user typing B after A was
   // submitted but before the real response became visible to React.
@@ -116,6 +143,7 @@ test('real HTTP workflow preserves source and non-target shots', async ({ page }
   expect(afterDelayedSave.shots[0].visualDescription).toBe(saveA)
 
   const downloadPromise = page.waitForEvent('download')
+  page.once('dialog', (dialog) => dialog.dismiss())
   await page.getByRole('button', { name: '下载 Markdown' }).click()
   const download = await downloadPromise
   expect(download.suggestedFilename()).toMatch(/^分镜-场1\.md$/)
@@ -123,4 +151,17 @@ test('real HTTP workflow preserves source and non-target shots', async ({ page }
   const exported = Buffer.concat(markdown ?? []).toString('utf8')
   expect(exported).toContain('# 分镜表')
   expect(exported).toContain(saveA)
+  expect(exported).not.toContain(localB)
+  expect(exported).not.toContain('\uFFFD')
+
+  const artifactDir = process.env.E2E_ARTIFACT_DIR
+  if (artifactDir) {
+    await mkdir(artifactDir, { recursive: true })
+    await download.saveAs(join(artifactDir, download.suggestedFilename()))
+    page.once('dialog', (dialog) => dialog.accept())
+    await page.reload()
+    await expect(page.getByLabel('画面描述')).toHaveValue(saveA)
+    await page.screenshot({ path: join(artifactDir, 'workbench-mock.png'), fullPage: true })
+    await writeFile(join(artifactDir, 'workflow.json'), JSON.stringify({ mode: 'mock', projectName, projectId, scriptId, storyboardId, revision: afterDelayedSave.revision, url: page.url(), exportedFile: download.suggestedFilename(), verifiedAt: new Date().toISOString() }, null, 2), 'utf8')
+  }
 })
